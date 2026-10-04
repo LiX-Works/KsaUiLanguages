@@ -1,0 +1,27 @@
+{
+  "productId": "org.ksa.uilanguages.installer",
+  "installerVersion": "1",
+  "gameVersion": "2026.10.7.5541",
+  "pluginVersion": "0.2.0",
+  "archives": [
+    {
+      "name": "plugin.zip",
+      "version": "0.2.0",
+      "source": "https://github.com/LiX-Works/KsaUiLanguages/releases/download/v0.2.0/KsaUiLanguages-0.2.0-build5541.zip",
+      "sha256": "bbe52495d65d2ce4e21cddad6adf1ddc72ae7d599af79280f7eda8c26f73b2e6"
+    },
+    {
+      "name": "loader.zip",
+      "version": "0.4.7",
+      "source": "https://github.com/StarMapLoader/StarMap/releases/download/0.4.7/StarMap-0.4.7.zip",
+      "sha256": "0d18fca5c7080755e163ccac95ca6068bdf3bb0b08c98dca7433f5c992b1d330"
+    },
+    {
+      "name": "runtime.zip",
+      "version": "10.0.12",
+      "source": "https://builds.dotnet.microsoft.com/dotnet/Runtime/10.0.12/dotnet-runtime-10.0.12-win-x64.zip",
+      "sha256": "da3947e6acbb5228e4e987c7585aa40ce2d7000856e3da0804e6ee3771e806dc",
+      "sha512": "844fa99e16fd6f44e0a7c29def7a82d7846902334d6a955248a9519a4dddb3f5acceb9c9223bef69f8c83b8ae2417537e5b76dddf79fb7117dc85b5039bc1297"
+    }
+  ]
+}

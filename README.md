@@ -6,6 +6,12 @@
 
 [下载预览版](https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.2.0) · [开发与检查](docs/DEVELOPMENT.md) · [贡献翻译](CONTRIBUTING.md) · [许可证与来源](THIRD_PARTY.md)
 
+## 推荐：一键安装包
+
+在其他电脑上安装，可以使用 [离线安装助手](https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.2.0-installer.1)：完整解压 ZIP、双击 Install.cmd、选择游戏目录，再从桌面“KSA 中文版 (5541)”启动。
+
+该包已包含加载器和私有 .NET 运行时，无需另行准备；需先自行安装能正常运行的 KSA 2026.10.7.5541。它使用独立配置和存档。详见 [安装与卸载说明](docs/INSTALLER.md)。
+
 ## 已覆盖的界面
 
 - 202 条原生语言资源译文，涉及图形、显示、声音、控制、模拟等设置和提示。
@@ -52,7 +58,7 @@ enabled = true
 
 独立编写的插件、译文和工具采用 **MIT**。随附字体子集采用 **SIL Open Font License 1.1**，详见 [THIRD_PARTY.md](THIRD_PARTY.md)。
 
-本项目是非官方社区项目，未获官方背书或建立合作。仓库和下载包不分发游戏本体、游戏 DLL、反编译材料或 StarMap；使用者需自行取得游戏与加载器。
+本项目是非官方社区项目，未获官方背书或建立合作。仓库和下载包不分发游戏本体、游戏 DLL 或反编译材料。独立插件包需另配 StarMap；离线安装助手则附带官方加载器和私有 .NET Runtime，适用各自许可证。
 
 接下来优先补齐基础 UI 和易懂的悬停说明，完善语言包贡献流程，再考虑其他语言和新版兼容。
 
@@ -60,4 +66,4 @@ enabled = true
 
 An independent, partial UI localization mod for Kitten Space Agency. Simplified Chinese is the first language pack; English fallback and in-game language switching are supported. Version 0.2.0 targets **KSA 2026.10.7.5541 / StarMap 0.4.7 / Windows x64** only.
 
-Download the build5541 ZIP from Releases, place its KsaUiLanguages folder in your player/instance mods directory, add the manifest entry above, and launch via StarMap. Code and original translations are MIT; the bundled font subset is SIL OFL 1.1. Game and loader binaries are not distributed.
+Use the offline installer ZIP, extract it fully, run Install.cmd and select your existing game folder. The installer includes StarMap and a private .NET Runtime under their respective licenses. Alternatively, install the standalone build5541 mod ZIP manually as described above. Code and original translations are MIT; the font subset is SIL OFL 1.1. Game binaries are not distributed.

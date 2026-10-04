@@ -24,7 +24,7 @@
 
 检查程序通过独立目录重定向玩家文件位置，不启动图形游戏。它不是完整的游戏操作测试，也不能证明长时间稳定性。
 
-检查程序支持 KSA_PROJECT_ROOT、KSA_GAME_DIR、KSA_LOADER_DIR 环境变量；build.ps1 在调用时设置并在完成后恢复这些进程变量。
+检查程序支持 KSA_PROJECT_ROOT、KSA_GAME_DIR、KSA_LOADER_DIR 环境变量；build.ps1 在调用时设置并在完成后恢复这些进程变量。可另用 KSA_PLUGIN_DIR 指定实际安装的插件目录，验证其语言包。
 
 ## 打包
 

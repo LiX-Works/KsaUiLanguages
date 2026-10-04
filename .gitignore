@@ -3,6 +3,10 @@
 !/tools/package.ps1
 !/tools/build_ui_font.py
 !/tools/requirements-font.txt
+!/tools/make_installer.ps1
+!/tools/check_installer.ps1
+/installer/payload/
+/installer/package.json
 /assets/NotoSansSC-variable.ttf
 /reference/*
 !/reference/terminology-policy.json

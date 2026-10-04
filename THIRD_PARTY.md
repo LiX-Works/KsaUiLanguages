@@ -19,14 +19,16 @@ The MIT license does not relicense the font, game or external dependencies.
 
 The original font file is not bundled. Its copyright and license metadata are retained in the generated font, and the full license accompanies the release.
 
-## External dependencies, not bundled
+## Dependencies and offline installer distribution
 
 - [Kitten Space Agency](https://ahwoo.com/app/100000/kitten-space-agency), by RocketWerkz: game binaries and assets remain subject to their own terms. This repository does not claim that the game is open source.
-- [StarMap 0.4.7](https://github.com/StarMapLoader/StarMap/tree/0.4.7): mod loader and API, MIT. Install it separately and retain its license.
-- [Harmony](https://github.com/pardeike/Harmony): patching dependency supplied by StarMap, MIT. The project references the loader's 0Harmony.dll and does not redistribute it.
-- [.NET](https://dotnet.microsoft.com/): a .NET 10 SDK is required for development.
+- [StarMap 0.4.7](https://github.com/StarMapLoader/StarMap/tree/0.4.7): mod loader and API, MIT. The standalone plugin ZIP does not include it; the offline installer includes its unmodified official release archive and [license](installer/licenses/StarMap-LICENSE.txt).
+- [Harmony](https://github.com/pardeike/Harmony): patching dependency supplied in StarMap's official archive, MIT. Its [license](installer/licenses/Harmony-LICENSE.txt) accompanies the offline installer.
+- [.NET](https://dotnet.microsoft.com/): a .NET 10 SDK is required for plugin development. The offline installer includes the unmodified official Windows x64 .NET 10.0.12 Runtime ZIP for private deployment. This binary distribution uses the [Microsoft .NET Library License](installer/licenses/Microsoft-NET-LICENSE.txt), with [third-party notices](installer/licenses/Microsoft-NET-ThirdPartyNotices.txt); it is not relicensed under the project's MIT license. Installation requires accepting the accompanying terms.
 - [fontTools](https://github.com/fonttools/fonttools): optional font-generation tool, MIT; not bundled with the project.
 
 StarMap's public loader code and [KSA-ZhHans](https://github.com/GaiusCassiusLonginus/KSA-ZhHans) were consulted during initial investigation. This plugin and its translations were independently authored; neither project's source is included.
 
 This is an unofficial community project. Product names identify compatibility and do not imply endorsement.
+
+Installer payload URLs and hashes are pinned in [dependencies.json](installer/dependencies.json). Microsoft license/notices also remain inside its unmodified Runtime ZIP. The repository tracks installer scripts, licenses and metadata, not the external binaries or game files.

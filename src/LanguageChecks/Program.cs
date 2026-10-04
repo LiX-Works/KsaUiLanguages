@@ -20,7 +20,7 @@ internal static class Program
     public static void Main()
     {
         var directories = new[] {
-            Path.Combine(Root, @"work\build\KsaUiLanguages"),
+            Environment.GetEnvironmentVariable("KSA_PLUGIN_DIR") ?? Path.Combine(Root, @"work\build\KsaUiLanguages"),
             LoaderDir,
             GameDir
         };
