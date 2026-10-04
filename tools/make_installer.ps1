@@ -10,9 +10,12 @@ $taskPackage = Join-Path $taskStage 'KsaUiLanguages-Installer'
 New-Item -ItemType Directory -Path $DependencyDir,(Join-Path $taskPackage 'payload') -Force | Out-Null
 foreach ($taskArchive in $taskMetadata.archives) {
     $taskCached = Join-Path $DependencyDir $taskArchive.name
-    if (!(Test-Path -LiteralPath $taskCached) -and $taskArchive.name -eq 'plugin.zip') {
-        $taskLocalPlugin = Join-Path $taskProject 'dist\KsaUiLanguages-0.2.0-build5541.zip'
-        if (Test-Path -LiteralPath $taskLocalPlugin) { Copy-Item -LiteralPath $taskLocalPlugin -Destination $taskCached }
+    if ($taskArchive.name -eq 'plugin.zip') {
+        $taskLocalPlugin = Join-Path $taskProject ("dist\KsaUiLanguages-$($taskMetadata.pluginVersion)-build5541.zip")
+        if ((Test-Path -LiteralPath $taskLocalPlugin) -and
+            (Get-FileHash -LiteralPath $taskLocalPlugin -Algorithm SHA256).Hash.ToLowerInvariant() -eq $taskArchive.sha256) {
+            Copy-Item -LiteralPath $taskLocalPlugin -Destination $taskCached -Force
+        }
     }
     $taskValid = (Test-Path -LiteralPath $taskCached) -and
         ((Get-FileHash -LiteralPath $taskCached -Algorithm SHA256).Hash.ToLowerInvariant() -eq $taskArchive.sha256)
@@ -45,7 +48,7 @@ foreach ($taskName in $taskInstallerFiles) {
 }
 Copy-Item -LiteralPath (Join-Path $taskSource 'licenses') -Destination $taskPackage -Recurse
 [IO.File]::WriteAllText((Join-Path $taskPackage 'package.json'), ($taskMetadata | ConvertTo-Json -Depth 7), [Text.UTF8Encoding]::new($false))
-$taskZip = Join-Path $taskDist 'KsaUiLanguages-0.2.0-installer1-win-x64.zip'
+$taskZip = Join-Path $taskDist ("KsaUiLanguages-$($taskMetadata.pluginVersion)-installer$($taskMetadata.installerVersion)-win-x64.zip")
 Compress-Archive -LiteralPath $taskPackage -DestinationPath $taskZip -Force
 $taskChecksum = (Get-FileHash -LiteralPath $taskZip -Algorithm SHA256).Hash.ToLowerInvariant() + '  ' + [IO.Path]::GetFileName($taskZip)
 [IO.File]::WriteAllText((Join-Path $taskDist 'INSTALLER-SHA256.txt'), $taskChecksum + [Environment]::NewLine, [Text.UTF8Encoding]::new($false))

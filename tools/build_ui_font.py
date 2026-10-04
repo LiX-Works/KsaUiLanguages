@@ -12,15 +12,15 @@ texts = ['Language / 语言', 'English', '简体中文']
 for path in (project / 'assets' / 'KsaUiLanguages' / 'Locales').glob('*.json'):
     pack = json.loads(path.read_text(encoding='utf-8'))
     texts.append(pack['displayName'])
-    for section in ('native', 'literals', 'ui', 'tooltips'):
+    for section in ('native', 'literals', 'ui', 'tooltips', 'editor'):
         texts.extend(pack.get(section, {}).keys())
         texts.extend(pack.get(section, {}).values())
 font = TTFont(project / 'assets' / 'NotoSansSC-variable.ttf')
 font = instantiateVariableFont(font, {'wght': 400}, inplace=True)
 available = set(font.getBestCmap())
-unicode_points = {ord(char) for text in texts for char in text}
+unicode_points = {ord(char) for text in texts for char in text if ord(char) >= 0x20}
 for lower, upper in ((0x20, 0x100), (0x370, 0x400), (0x2000, 0x2070),
-                     (0x2190, 0x2300), (0x25A0, 0x2600)):
+                     (0x2190, 0x2300), (0x2500, 0x2600)):
     unicode_points.update(set(range(lower, upper)) & available)
 missing = unicode_points - available
 if missing:

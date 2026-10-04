@@ -1,6 +1,8 @@
 param([switch]$IncludeSource)
 $ErrorActionPreference = 'Stop'
 $taskProject = Split-Path $PSScriptRoot -Parent
+$taskProjectXml = [xml](Get-Content -Raw -LiteralPath (Join-Path $taskProject 'src\KsaUiLanguages\KsaUiLanguages.csproj'))
+$taskVersion = [string]$taskProjectXml.Project.PropertyGroup.Version
 $taskDist = Join-Path $taskProject 'dist'
 $taskStage = Join-Path $taskDist ('staging-' + [guid]::NewGuid().ToString('N'))
 $taskMod = Join-Path $taskStage 'KsaUiLanguages'
@@ -32,11 +34,11 @@ Copy-Item -LiteralPath $taskPlugin -Destination $taskMod
 $taskUnexpectedDlls = @(Get-ChildItem -LiteralPath $taskMod -Recurse -File -Filter '*.dll' |
     Where-Object { $_.Name -ne 'KsaUiLanguages.dll' })
 if ($taskUnexpectedDlls.Count) { throw 'Game or loader DLLs must not be distributed.' }
-$taskBinaryZip = Join-Path $taskDist 'KsaUiLanguages-0.2.0-build5541.zip'
+$taskBinaryZip = Join-Path $taskDist ("KsaUiLanguages-$taskVersion-build5541.zip")
 Compress-Archive -LiteralPath $taskMod -DestinationPath $taskBinaryZip -Force
 $taskArchives = @($taskBinaryZip)
 if ($IncludeSource) {
-    $taskSourceZip = Join-Path $taskDist 'KsaUiLanguages-0.2.0-source.zip'
+    $taskSourceZip = Join-Path $taskDist ("KsaUiLanguages-$taskVersion-source.zip")
     & git -C $taskProject archive --format=zip --output=$taskSourceZip HEAD
     if ($LASTEXITCODE -ne 0) { throw 'git archive failed.' }
     $taskArchives += $taskSourceZip

@@ -3,7 +3,8 @@ $ErrorActionPreference = 'Stop'
 $taskProject = Split-Path $PSScriptRoot -Parent
 $taskWinPS = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
 $taskWork = Join-Path $taskProject ('work\installer-checks-' + [guid]::NewGuid().ToString('N').Substring(0,8))
-$taskZip = Join-Path $taskProject 'dist\KsaUiLanguages-0.2.0-installer1-win-x64.zip'
+$taskMetadata = Get-Content -Raw -LiteralPath (Join-Path $taskProject 'installer\dependencies.json') | ConvertFrom-Json
+$taskZip = Join-Path $taskProject ("dist\KsaUiLanguages-$($taskMetadata.pluginVersion)-installer$($taskMetadata.installerVersion)-win-x64.zip")
 Expand-Archive -LiteralPath $taskZip -DestinationPath (Join-Path $taskWork 'package')
 $taskPackage = Join-Path $taskWork 'package\KsaUiLanguages-Installer'
 $taskRoot = Join-Path $taskWork ([string]([char]0x5B89) + [char]0x88C5 + ' test with spaces')

@@ -1,7 +1,7 @@
-KSA UI Languages 0.2.0 — 基础 UI 汉化预览版
+KSA UI Languages 0.3.0 — 基础 UI 汉化预览版
 
 项目与源码：https://github.com/LiX-Works/KsaUiLanguages
-下载：https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.2.0
+下载：https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.3.0
 
 适配：KSA 2026.10.7.5541 / Windows x64 / StarMap 0.4.7
 其他游戏版本会停用插件。当前不是完整汉化。
@@ -27,11 +27,14 @@ Language / 语言菜单可即时切换 English / 简体中文。
 
 覆盖
 202条原生语言资源译文；主菜单、暂停菜单、部分设置下拉与面板标题；
-资源栏液氢/液氧/电能；78条中文悬停说明。
+资源栏液氢/液氧/电能；语言包包含116条悬停说明。
+新增编辑器工具栏、部件分类、对称/相机工具、发射字段与部件参数。
+部件原始编号、发射场编号、单位和常用缩写保留。
 保留 RCS、Δv、TWR、Isp、EVA、HUD、MMH、NTO 及常见飞行按钮缩写。
 
 验证
-11项实际游戏语言对象/ImGui哈希检查通过；若干界面做过实机检查。
+16项实际游戏语言对象、方法指令、ImGui哈希与全部补丁安装检查通过。
+初版编辑器中文由用户实机截图确认；最后的符号/预览修正待视觉复核。
 未验证所有按钮、长期游戏稳定性或其他游戏版本。
 
 许可证

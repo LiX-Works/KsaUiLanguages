@@ -168,7 +168,7 @@ try {
     Write-TaskJson -Path (Join-Path $taskRoot 'install-state.json') -Value @{
         productId=$TaskProductId;gameDir=$GameDir;loaderDir=$taskLoader;runtimeDir=$taskRuntime
         instanceDir=$taskInstance;deploymentDir=$taskDeployment;desktopShortcut=$taskShortcut
-        installerVersion='1';pluginVersion='0.2.0';uninstalled=$false
+        installerVersion=$taskPackage.installerVersion;pluginVersion=$taskPackage.pluginVersion;uninstalled=$false
     }
     $taskCommitted = $true
     $taskDone = [string]::Join($taskNL, @('安装完成。','','请从桌面“KSA 中文版 (5541)”启动。','菜单栏可选择 Language / 语言。','',"配置与存档：$taskInstance","卸载：$taskRoot\Uninstall.cmd"))

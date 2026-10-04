@@ -3,5 +3,6 @@
   "displayName": "English",
   "fontFile": "KsaUiNotoSC.ttf",
   "native": {},
-  "literals": {}
+  "literals": {},
+  "editor": {}
 }

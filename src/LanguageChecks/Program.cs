@@ -45,6 +45,16 @@ internal static class Program
         harmony.Patch(AccessTools.PropertyGetter(typeof(KSA.Constants), nameof(KSA.Constants.DocumentsFolderPath)),
             prefix: new HarmonyMethod(typeof(Program), nameof(UseCheckDirectory)));
         KsaUiLanguages.Runtime.Initialize();
+        if (Environment.GetEnvironmentVariable("KSA_DIAGNOSTICS") == "1")
+        {
+            foreach (var m in typeof(ImGui).GetMethods().Where(m => m.Name is "BeginCombo" or "Selectable"))
+                Console.WriteLine("GUI-SIGNATURE: " + m);
+            var comboDefinition = typeof(KSA.ImGuiHelper).GetMethods().First(m => m.Name == "DrawCombo" && m.IsGenericMethodDefinition
+                && m.GetGenericArguments()[0].GetGenericParameterConstraints().Contains(typeof(KSA.IComboable))
+                && m.GetParameters()[1].ParameterType == m.GetGenericArguments()[0].MakeByRefType());
+            foreach (var i in PatchProcessor.GetOriginalInstructions(comboDefinition.MakeGenericMethod(typeof(KSA.CelestialObject))))
+                if (i.operand is MethodInfo m && m.DeclaringType == typeof(ImGui)) Console.WriteLine("COMBO-CALL: " + m);
+        }
         Require(KSA.LStrings.SettingsDisplayResolution.Localized == "分辨率", "Chinese native resource updates the actual game LString");
         results.Add("PASS: Chinese native text");
         Require(KsaUiLanguages.Runtime.Literal("SETTINGS") == "设置", "Chinese hardcoded UI text");
@@ -97,7 +107,67 @@ internal static class Program
         KsaUiLanguages.ConsoleTooltipPatch.LocalizeTooltip(ref tooltip);
         Require(tooltip.ToString().Contains("姿态控制推进器"), "Gauge tooltip can be explained in Chinese");
         results.Add("PASS: Chinese tooltip without changing the RCS label");
+        ReadOnlySpan<string> editorSegments = new[] { "PLACE", "TRANS", "ROTATE", "SCALE" };
+        KsaUiLanguages.EditorSegmentsPatch.Localize("GizmoTool", ref editorSegments);
+        Require(editorSegments.SequenceEqual(new[] { "放置", "平移", "旋转", "缩放" }), "Editor tool captions are translated");
+        ReadOnlySpan<string> otherSegments = new[] { "PLACE" };
+        KsaUiLanguages.EditorSegmentsPatch.Localize("PlayerCustomWidget", ref otherSegments);
+        Require(otherSegments[0] == "PLACE", "Other segmented controls are untouched");
+        Span<char> categoryBuffer = stackalloc char[128];
+        int categoryLength = KsaUiLanguages.EditorCategoryPatch.LocalizedUpper("Fuel Tanks", categoryBuffer);
+        Require(categoryBuffer[..categoryLength].ToString() == "推进剂箱", "Category display is translated");
+        ReadOnlySpan<char> binLabel = "BIN";
+        KsaUiLanguages.EditorBinPatch.Localize("SymmetryBin", ref binLabel);
+        Require(binLabel.ToString() == "删除", "Delete zone caption is translated independently");
+        results.Add("PASS: Scoped editor segments and category display");
+        Require(KsaUiLanguages.Runtime.EditorLiteral("\nMass: ") == "\n质量: ", "Part tooltip retains ASCII colon and newline");
+        Require(KsaUiLanguages.Runtime.EditorLiteral("\nDecoupler Force: ") == "\n分离力: ", "Decoupler readout delimiter remains valid");
+        Require(KsaUiLanguages.Runtime.EditorLiteral(" s") == " s", "Units are unchanged");
+        Require(KsaUiLanguages.EditorLiteralPatch.PropellantDisplay("Double-Base").ToString() == "双基推进剂", "Known propellant display name is translated");
+        var propellantMethod = AccessTools.Method(typeof(KSA.PartArchetypes), "AppendPropellantBranch");
+        var propellantInstructions = KsaUiLanguages.EditorLiteralPatch.Translate(PatchProcessor.GetOriginalInstructions(propellantMethod).Select(i => new CodeInstruction(i)), propellantMethod).ToList();
+        Require(propellantInstructions.Any(i => i.operand is MethodInfo m && m.Name == nameof(KsaUiLanguages.EditorLiteralPatch.PropellantDisplay)), "Propellant display conversion reaches actual append instructions");
+        results.Add("PASS: Part-tooltip separators and units");
+        ImString fieldLabel = "Vehicle Name";
+        KsaUiLanguages.Runtime.EditorUiDepth = 0;
+        Require(KsaUiLanguages.EditorFieldCaptionPatch.DisplayCaption(fieldLabel).ToString() == "Vehicle Name", "Outside editor scope caption is unchanged");
+        KsaUiLanguages.Runtime.EditorUiDepth = 1;
+        Require(KsaUiLanguages.EditorFieldCaptionPatch.DisplayCaption(fieldLabel).ToString() == "飞船名称" && fieldLabel.ToString() == "Vehicle Name", "Only a temporary display caption changes");
+        KsaUiLanguages.Runtime.EditorUiDepth = 0;
+        var categoryMethod = AccessTools.Method(typeof(KSA.VehicleEditor), "DrawCategoryRow");
+        var categoryOriginal = PatchProcessor.GetOriginalInstructions(categoryMethod);
+        var categoryPatched = KsaUiLanguages.EditorCategoryPatch.Translate(categoryOriginal.Select(i => new CodeInstruction(i))).ToList();
+        Require(categoryPatched.Count(i => i.operand is MethodInfo m && m.DeclaringType == typeof(KsaUiLanguages.EditorCategoryPatch)) == 1, "Exactly the category display conversion is replaced");
+        Require(categoryPatched.Any(i => i.operand is MethodInfo m && m.Name == "InvisibleButton"), "Category button ID call remains present");
+        var pickerType = typeof(KSA.VehicleEditor).GetNestedType("PartWindow", BindingFlags.Public | BindingFlags.NonPublic)!;
+        var pickerMethod = AccessTools.Method(pickerType, "OnDrawUi");
+        var pickerInstructions = KsaUiLanguages.EditorLiteralPatch.Translate(PatchProcessor.GetOriginalInstructions(pickerMethod).Select(i => new CodeInstruction(i)), pickerMethod).ToList();
+        int allIndex = pickerInstructions.FindIndex(i => i.opcode == System.Reflection.Emit.OpCodes.Ldstr && Equals(i.operand, "All"));
+        Require(allIndex >= 0 && !(pickerInstructions[allIndex + 1].operand is MethodInfo allMethod && allMethod.Name == nameof(KsaUiLanguages.Runtime.EditorLiteral)), "All category tag is untouched at its caller");
+        var inputMethod = typeof(KSA.ImGuiHelper).GetMethods().First(m => m.Name == "DrawInput" && m.GetParameters()[0].ParameterType == typeof(ImString));
+        var inputPatched = KsaUiLanguages.EditorFieldCaptionPatch.Translate(PatchProcessor.GetOriginalInstructions(inputMethod), inputMethod).ToList();
+        Require(inputPatched.Count(i => i.operand is MethodInfo m && m.DeclaringType == typeof(KsaUiLanguages.EditorFieldCaptionPatch)) == 1, "One field display conversion is injected without rewriting the variable");
+        foreach (var helper in KsaUiLanguages.EditorFieldCaptionPatch.TargetMethods().Where(m => m.IsGenericMethod))
+        {
+            var patched = KsaUiLanguages.EditorFieldCaptionPatch.Translate(PatchProcessor.GetOriginalInstructions(helper).Select(i => new CodeInstruction(i)), helper).ToList();
+            Require(patched.Count(i => i.operand is MethodInfo m && m.DeclaringType == typeof(KsaUiLanguages.EditorFieldCaptionPatch)) == 3,
+                "Native launch combo has display, preview and option wrappers at the actual call sites");
+        }
+        results.Add("PASS: Actual editor display instructions preserve ID construction");
+        var editorLabels = new[] { "All Sizes", "Toggle Resource Display", "Earth", "At CCSFS LC-39A On Earth", "Orbit around Moon" };
+        var chineseEditorIds = editorLabels.ToDictionary(s => s, s => s == "Earth" ? KsaUiLanguages.Runtime.EditorNativeSelectable(s, 1)
+            : s.StartsWith("At ") || s.StartsWith("Orbit ") ? KsaUiLanguages.Runtime.EditorNativeSelectable(s, 2) : KsaUiLanguages.Runtime.EditorMenuText(s));
+        Require(KsaUiLanguages.Runtime.EditorNativeText("Earth", 1) == "地球", "Launch-body preview is translated");
+        Require(KsaUiLanguages.Runtime.EditorNativeText("At CCSFS LC-39A On Earth", 2) == "地球：CCSFS LC-39A", "Location formatting preserves the site identifier");
         KsaUiLanguages.Runtime.ApplyLanguage("en-US");
+        foreach (var original in editorLabels)
+        {
+            string englishId = original == "Earth" ? KsaUiLanguages.Runtime.EditorNativeSelectable(original, 1)
+                : original.StartsWith("At ") || original.StartsWith("Orbit ") ? KsaUiLanguages.Runtime.EditorNativeSelectable(original, 2) : KsaUiLanguages.Runtime.EditorMenuText(original);
+            Require(HashGuiId(englishId, 0x735A1913) == HashGuiId(chineseEditorIds[original], 0x735A1913), "Editor selectable IDs are stable across languages");
+        }
+        Require(KsaUiLanguages.Runtime.EditorNativeText("Orbit around Moon", 2) == "Orbit around Moon", "English dynamic location formatting is restored");
+        results.Add("PASS: Launch previews and stable option IDs across languages");
         Require(KSA.LStrings.SettingsDisplayResolution.Localized == KSA.LStrings.SettingsDisplayResolution.Template,
             "English restores the actual game template");
         Require(KsaUiLanguages.Runtime.Literal("SETTINGS") == "SETTINGS", "English UI literal fallback");
@@ -120,6 +190,19 @@ internal static class Program
         Require(KSA.LStrings.SettingsDisplayResolution.Localized == KSA.LStrings.SettingsDisplayResolution.Template,
             "Removing the provider restores English");
         results.Add("PASS: Provider removal restores English");
+        var patchSmoke = new Harmony("org.ksa.uilanguages.patchsmoke");
+        try
+        {
+            KsaUiLanguages.Runtime.ApplyLanguage("zh-CN");
+            patchSmoke.PatchAll(typeof(KsaUiLanguages.LanguagePlugin).Assembly);
+            Require(Harmony.GetAllPatchedMethods().Any(m => Harmony.GetPatchInfo(m)?.Owners.Contains(patchSmoke.Id) == true), "Plugin Harmony patches can be installed against the actual game");
+            results.Add("PASS: All plugin patches install against game build 5541");
+        }
+        finally
+        {
+            patchSmoke.UnpatchAll(patchSmoke.Id);
+            KsaUiLanguages.Runtime.RestoreProvider();
+        }
         harmony.UnpatchAll("org.ksa.uilanguages.headlesschecks");
         var report = new { gameVersion = typeof(KSA.Constants).Assembly.GetName().Version?.ToString(),
             results, scope = "Actual game localization objects; no GUI or button-operation validation" };

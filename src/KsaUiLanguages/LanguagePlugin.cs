@@ -22,6 +22,7 @@ public sealed class LanguagePack
     public Dictionary<string, string> Literals { get; set; } = new();
     public Dictionary<string, string> Ui { get; set; } = new();
     public Dictionary<string, string> Tooltips { get; set; } = new();
+    public Dictionary<string, string> Editor { get; set; } = new();
 }
 
 [StarMapMod]
@@ -82,6 +83,7 @@ public static class Runtime
     private static readonly Dictionary<string, byte[]> Utf8Cache = new(StringComparer.Ordinal);
     public static string SelectedLocale { get; private set; } = "zh-CN";
     public static bool InSettingsCombo { get; set; }
+    [ThreadStatic] public static int EditorUiDepth;
     public static LanguagePack CurrentPack { get; private set; } = new();
     public static string FontPath => Path.Combine(ModRoot, "Fonts", Path.GetFileName(CurrentPack.FontFile));
     public static string FontName => Path.GetFileNameWithoutExtension(FontPath);
@@ -119,6 +121,9 @@ public static class Runtime
                 throw new InvalidDataException($"Placeholder mismatch: {entry.Key}");
             next.Add(original.Id, entry.Value);
         }
+        foreach (var entry in pack.Editor)
+            if (!Tokens(entry.Key).SequenceEqual(Tokens(entry.Value)))
+                throw new InvalidDataException($"Editor placeholder mismatch: {entry.Key}");
         CurrentPack = pack;
         SelectedLocale = locale;
         Translations.Clear();
@@ -130,7 +135,7 @@ public static class Runtime
             _originalNavLabels ??= (string[])labels.Clone();
             for (int i = 0; i < labels.Length; i++) labels[i] = Literal(_originalNavLabels[i]);
         }
-        Log($"Language {locale}: {Translations.Count} native, {pack.Literals.Count} literals, {pack.Ui.Count} UI labels, {pack.Tooltips.Count} tooltips.");
+        Log($"Language {locale}: {Translations.Count} native, {pack.Literals.Count} literals, {pack.Ui.Count} UI labels, {pack.Tooltips.Count} tooltips, {pack.Editor.Count} editor labels.");
     }
 
     private static IEnumerable<string> Tokens(string text) => Regex.Matches(text, @"\{[^{}]+\}")
@@ -151,6 +156,57 @@ public static class Runtime
     public static string UiText(string original) => CurrentPack.Ui.GetValueOrDefault(original, original);
 
     public static string TooltipText(string original) => CurrentPack.Tooltips.GetValueOrDefault(original, original);
+
+    public static string EditorText(string original) => CurrentPack.Editor.GetValueOrDefault(original, original);
+
+    public static string EditorLiteral(string original)
+    {
+        string direct = EditorText(original);
+        if (direct != original) return direct;
+        string tooltip = TooltipText(original);
+        if (tooltip != original) return tooltip;
+        // Part cards split on an ASCII colon; retain all layout delimiters.
+        int start = original.StartsWith("\n", StringComparison.Ordinal) ? 1 : 0;
+        if (original.AsSpan(start).StartsWith("├─ ") || original.AsSpan(start).StartsWith("└─ ")) start += 3;
+        if (original.EndsWith(": ", StringComparison.Ordinal))
+        {
+            string key = original[start..^2];
+            string translated = EditorText(key);
+            if (translated != key) return original[..start] + translated + ": ";
+        }
+        return original;
+    }
+
+    public static string EditorMenuText(string original)
+    {
+        int separator = original.IndexOf("##", StringComparison.Ordinal);
+        string visible = separator < 0 ? original : original[..separator];
+        if (!Packs.Values.Any(pack => pack.Editor.ContainsKey(visible))) return original;
+        string translated = EditorText(visible);
+        int stable = original.IndexOf("###", StringComparison.Ordinal);
+        return translated + (stable >= 0 ? original[stable..] : "###" + original);
+    }
+
+    public static string EditorNativeText(string original, int kind)
+    {
+        if (kind == 1) return EditorText(original);
+        if (kind != 2) return original;
+        const string orbitPrefix = "Orbit around ";
+        if (original.StartsWith(orbitPrefix, StringComparison.Ordinal))
+            return EditorText("Orbit around {0}").Replace("{0}", EditorText(original[orbitPrefix.Length..]), StringComparison.Ordinal);
+        int on = original.LastIndexOf(" On ", StringComparison.Ordinal);
+        if (original.StartsWith("At ", StringComparison.Ordinal) && on > 3)
+            return EditorText("At {0} On {1}").Replace("{0}", original[3..on], StringComparison.Ordinal)
+                .Replace("{1}", EditorText(original[(on + 4)..]), StringComparison.Ordinal);
+        return original == "None" ? EditorText(original) : original;
+    }
+
+    public static string EditorNativeSelectable(string original, int kind)
+    {
+        int stable = original.IndexOf("###", StringComparison.Ordinal);
+        string visible = stable < 0 ? original : original[..stable];
+        return EditorNativeText(visible, kind) + (stable >= 0 ? original[stable..] : "###" + original);
+    }
 
     public static string MenuText(string original)
     {
@@ -189,6 +245,7 @@ public static class Runtime
         if (_originalNavLabels is not null && navField?.GetValue(null) is string[] labels)
             _originalNavLabels.CopyTo(labels, 0);
         InSettingsCombo = false;
+        EditorUiDepth = 0;
     }
 
     public static void Log(string message)
