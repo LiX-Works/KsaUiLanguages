@@ -1,0 +1,6 @@
+KsaUiNotoSC.ttf is a weight-400 subset derived from Google Noto Sans SC.
+Source: https://github.com/google/fonts/tree/main/ofl/notosanssc
+Upstream file: NotoSansSC[wght].ttf
+License: SIL Open Font License 1.1; see FONT-LICENSE.txt.
+The subset is rebuilt by tools/build_ui_font.py from the installed language packs.
+The generated font has a renamed family; no game font is included.

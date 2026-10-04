@@ -1,0 +1,6 @@
+name = "KSA UI Languages Prototype"
+description = "Independent UI language prototype for KSA build 5541"
+assets = []
+
+[StarMap]
+EntryAssembly = "KsaUiLanguages"

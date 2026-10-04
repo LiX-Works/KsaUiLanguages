@@ -1,0 +1,425 @@
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using System.Reflection.Emit;
+using System.Text.Json;
+using System.Text;
+using System.Text.RegularExpressions;
+using Brutal.ImGuiApi;
+using Brutal.Localization;
+using HarmonyLib;
+using KSA;
+using StarMap.API;
+using NativeStrings = Brutal.Localization.LStrings;
+
+namespace KsaUiLanguages;
+
+public sealed class LanguagePack
+{
+    public string Locale { get; set; } = "en-US";
+    public string DisplayName { get; set; } = "English";
+    public string FontFile { get; set; } = "KsaUiNotoSC.ttf";
+    public Dictionary<string, string> Native { get; set; } = new();
+    public Dictionary<string, string> Literals { get; set; } = new();
+    public Dictionary<string, string> Ui { get; set; } = new();
+    public Dictionary<string, string> Tooltips { get; set; } = new();
+}
+
+[StarMapMod]
+public sealed class LanguagePlugin
+{
+    private Harmony? _patches;
+
+    [StarMapBeforeMain]
+    public void BeforeMain()
+    {
+        var gameVersion = typeof(KSA.Program).Assembly.GetName().Version?.ToString();
+        if (gameVersion != "2026.10.7.5541")
+        {
+            Runtime.Log($"Prototype disabled: expected 2026.10.7.5541, found {gameVersion}.");
+            return;
+        }
+        try
+        {
+            Runtime.Initialize();
+            _patches = new Harmony("org.ksa.uilanguages.prototype");
+            _patches.PatchAll(typeof(LanguagePlugin).Assembly);
+            Runtime.Log("Initialized independent language prototype for build 5541.");
+        }
+        catch (Exception error)
+        {
+            _patches?.UnpatchAll("org.ksa.uilanguages.prototype");
+            _patches = null;
+            Runtime.RestoreProvider();
+            Runtime.Log("Prototype disabled after initialization error: " + error);
+        }
+    }
+
+    [StarMapAllModsLoaded]
+    public void AllModsLoaded()
+    {
+        if (_patches is null) return;
+        Runtime.ApplyLanguage(Runtime.SelectedLocale);
+        Runtime.Log("Mods loaded; UI language is ready.");
+    }
+
+    [StarMapUnload]
+    public void Unload()
+    {
+        if (_patches is null) return;
+        Runtime.RestoreProvider();
+        _patches.UnpatchAll("org.ksa.uilanguages.prototype");
+    }
+}
+
+public static class Runtime
+{
+    public static readonly string ModRoot = Path.GetDirectoryName(typeof(Runtime).Assembly.Location)!;
+    public static readonly Dictionary<string, LanguagePack> Packs = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly Dictionary<LStringId, string> Translations = new();
+    private static LocalizedStrings.GetLocalizedStringDelegate? _previousProvider;
+    private static readonly LocalizedStrings.GetLocalizedStringDelegate Provider = Provide;
+    private static string[]? _originalNavLabels;
+    private static readonly Dictionary<string, byte[]> Utf8Cache = new(StringComparer.Ordinal);
+    public static string SelectedLocale { get; private set; } = "zh-CN";
+    public static bool InSettingsCombo { get; set; }
+    public static LanguagePack CurrentPack { get; private set; } = new();
+    public static string FontPath => Path.Combine(ModRoot, "Fonts", Path.GetFileName(CurrentPack.FontFile));
+    public static string FontName => Path.GetFileNameWithoutExtension(FontPath);
+
+    public static void Initialize()
+    {
+        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        foreach (var file in Directory.GetFiles(Path.Combine(ModRoot, "Locales"), "*.json"))
+        {
+            var pack = JsonSerializer.Deserialize<LanguagePack>(File.ReadAllText(file), options)
+                ?? throw new InvalidDataException($"Empty language pack: {file}");
+            Packs.Add(pack.Locale, pack);
+        }
+        var configPath = Path.Combine(ModRoot, "language.json");
+        if (File.Exists(configPath))
+        {
+            using var config = JsonDocument.Parse(File.ReadAllText(configPath));
+            SelectedLocale = config.RootElement.GetProperty("locale").GetString() ?? "zh-CN";
+        }
+        if (!Packs.ContainsKey(SelectedLocale)) SelectedLocale = "en-US";
+        _previousProvider = NativeStrings.LocalizedStringProvider;
+        ApplyLanguage(SelectedLocale);
+    }
+
+    public static void ApplyLanguage(string locale)
+    {
+        var pack = Packs[locale];
+        var next = new Dictionary<LStringId, string>();
+        foreach (var entry in pack.Native)
+        {
+            var field = typeof(KSA.LStrings).GetField(entry.Key, BindingFlags.Public | BindingFlags.Static);
+            if (field?.GetValue(null) is not LString original)
+                throw new InvalidDataException($"Unknown native resource ID: {entry.Key}");
+            if (!Tokens(original.Template).SequenceEqual(Tokens(entry.Value)))
+                throw new InvalidDataException($"Placeholder mismatch: {entry.Key}");
+            next.Add(original.Id, entry.Value);
+        }
+        CurrentPack = pack;
+        SelectedLocale = locale;
+        Translations.Clear();
+        foreach (var entry in next) Translations.Add(entry.Key, entry.Value);
+        NativeStrings.SetLocalizedStringProvider(Provider);
+        var navField = AccessTools.Field(typeof(GameSettings), "_navRailLabels");
+        if (navField?.GetValue(null) is string[] labels)
+        {
+            _originalNavLabels ??= (string[])labels.Clone();
+            for (int i = 0; i < labels.Length; i++) labels[i] = Literal(_originalNavLabels[i]);
+        }
+        Log($"Language {locale}: {Translations.Count} native, {pack.Literals.Count} literals, {pack.Ui.Count} UI labels, {pack.Tooltips.Count} tooltips.");
+    }
+
+    private static IEnumerable<string> Tokens(string text) => Regex.Matches(text, @"\{[^{}]+\}")
+        .Select(match => match.Value).Order(StringComparer.Ordinal);
+
+    private static bool Provide(LString original, [NotNullWhen(true)] out string? result)
+    {
+        if (Translations.TryGetValue(original.Id, out result)) return true;
+        if (_previousProvider is not null && _previousProvider(original, out result)) return true;
+        result = original.Template;
+        return true;
+    }
+
+    public static string Literal(string original) => CurrentPack.Literals.GetValueOrDefault(original, original);
+
+    public static bool IsLiteralCandidate(string text) => Packs.Values.Any(pack => pack.Literals.ContainsKey(text));
+
+    public static string UiText(string original) => CurrentPack.Ui.GetValueOrDefault(original, original);
+
+    public static string TooltipText(string original) => CurrentPack.Tooltips.GetValueOrDefault(original, original);
+
+    public static string MenuText(string original)
+    {
+        // ImGui ### keeps the widget ID identical across language changes.
+        int separator = original.IndexOf("##", StringComparison.Ordinal);
+        string visible = separator < 0 ? original : original[..separator];
+        string translated = UiText(visible);
+        // Normalize known labels in every locale: ### includes its own hash prefix,
+        // so both English and translated captions need the same explicit ID.
+        bool known = Packs.Values.Any(pack => pack.Ui.ContainsKey(visible));
+        if (!known) return original;
+        int stableSeparator = original.IndexOf("###", StringComparison.Ordinal);
+        if (stableSeparator >= 0) return translated + original[stableSeparator..];
+        if (separator >= 0) return translated + "###" + original;
+        return translated + "###" + original;
+    }
+
+    public static ImString ImText(string text)
+    {
+        if (!Utf8Cache.TryGetValue(text, out var bytes))
+        {
+            bytes = Encoding.UTF8.GetBytes(text + '\0');
+            Utf8Cache.Add(text, bytes);
+        }
+        return new ImString(bytes.AsSpan(0, bytes.Length - 1));
+    }
+
+    public static void RestoreProvider()
+    {
+        if (ReferenceEquals(NativeStrings.LocalizedStringProvider, Provider))
+        {
+            if (_previousProvider is null) NativeStrings.RemoveLocalizedStringProvider();
+            else NativeStrings.SetLocalizedStringProvider(_previousProvider);
+        }
+        var navField = AccessTools.Field(typeof(GameSettings), "_navRailLabels");
+        if (_originalNavLabels is not null && navField?.GetValue(null) is string[] labels)
+            _originalNavLabels.CopyTo(labels, 0);
+        InSettingsCombo = false;
+    }
+
+    public static void Log(string message)
+    {
+        Console.WriteLine($"[UiLanguages] {message}");
+        var directory = Path.Combine(KSA.Constants.DocumentsFolderPath, "logs");
+        Directory.CreateDirectory(directory);
+        File.AppendAllText(Path.Combine(directory, "UiLanguages.log"), $"{DateTimeOffset.UtcNow:O} {message}{Environment.NewLine}");
+    }
+}
+
+[HarmonyPatch(typeof(FontManager), nameof(FontManager.RegenerateFonts))]
+public static class FontRegistrationPatch
+{
+    [HarmonyPrefix]
+    public static void RegisterLocaleFont()
+    {
+        var field = AccessTools.Field(typeof(FontManager), "_fontFiles");
+        if (field.GetValue(null) is not string[] fonts || !File.Exists(Runtime.FontPath))
+            throw new InvalidOperationException("UI font registration is not ready.");
+        // Put the selected font first so this build also creates its tooltip font from the right file.
+        var rest = fonts.Where(file => !string.Equals(file, Runtime.FontPath, StringComparison.OrdinalIgnoreCase));
+        field.SetValue(null, new[] { Runtime.FontPath }.Concat(rest).ToArray());
+        GameSettings.Current.Interface.FontName = Runtime.FontName;
+        Runtime.Log("Registered UI font before atlas generation: " + Runtime.FontName);
+    }
+}
+
+[HarmonyPatch]
+public static class SettingsLiteralPatch
+{
+    public static IEnumerable<MethodBase> TargetMethods()
+    {
+        foreach (var name in new[] { "OnDrawUi", "DrawFooter", "BuildFooterStatusText" })
+        {
+            var method = AccessTools.Method(typeof(GameSettings), name);
+            if (method is not null) yield return method;
+        }
+        yield return AccessTools.Method(typeof(EscMenu), nameof(EscMenu.Draw));
+    }
+
+    [HarmonyTranspiler]
+    public static IEnumerable<CodeInstruction> Translate(IEnumerable<CodeInstruction> instructions, MethodBase __originalMethod)
+    {
+        var lookup = AccessTools.Method(typeof(Runtime), nameof(Runtime.Literal));
+        bool buttonContext = __originalMethod.DeclaringType == typeof(EscMenu) || __originalMethod.Name == "DrawFooter";
+        var buttonLabels = new HashSet<string> { "APPLY", "RESET", "DISCARD", "RESET KEYS", "CLOSE", "RESUME", "NEW VEHICLE", "LAUNCH VEHICLE", "ABANDON VEHICLE", "RECOVER VEHICLE", "SAVE/LOAD", "EXIT EDITOR", "SETTINGS", "QUIT" };
+        foreach (var instruction in instructions)
+        {
+            yield return instruction;
+            if (instruction.opcode == OpCodes.Ldstr && instruction.operand is string text && Runtime.IsLiteralCandidate(text)
+                && !(buttonContext && buttonLabels.Contains(text)))
+                yield return new CodeInstruction(OpCodes.Call, lookup);
+        }
+    }
+}
+
+[HarmonyPatch]
+public static class MenuTextPatch
+{
+    private static readonly HashSet<string> StaticLabels = new(StringComparer.Ordinal)
+    {
+        "File", "Universe", "View", "Editor", "Settings", "Save/Load", "Build New Vehicle", "Launch Existing Vehicle",
+        "Check for Update", "Version History", "Exit Game", "Vehicle Save/Load", "Crew Assignment", "Exit Editor",
+        "Speed", "Camera", "Camera Mode", "Fixed", "Free", "Orbit", "Map", "Target", "Orbit Lines",
+        "Show All Orbits", "Hide All Orbits", "Show Celestial Names", "Show Location Names", "Show Map Grid",
+        "Frame Statistics", "Context Assignments", "Resource Groups", "Resources", "Draw Part Axes", "Show Delta-V Debug",
+        "Vehicle", "Follow", "Control", "Set Target", "Clear Target", "Move Camera To", "Celestial Info"
+    };
+    private static readonly HashSet<string> HudTitles = new(StringComparer.Ordinal)
+    {
+        "Navball", "Telemetry", "Engine Control", "Autopilot Settings", "Resources", "Game Time", "Gametime",
+        "Sequences", "Crew Portraits", "Altitude", "Attitude Indicators", "Rendezvous Control", "Burn Control", "Kitten Flight Control"
+    };
+
+    public static IEnumerable<MethodBase> TargetMethods()
+    {
+        yield return AccessTools.Method(typeof(KSA.Program), "DrawMenuBar");
+        yield return AccessTools.Method(typeof(GaugeCanvas), nameof(GaugeCanvas.OnDrawMenuBar));
+    }
+
+    public static void LocalizeMenuLabel(ref ImString label)
+    {
+        string original = label.ToString();
+        string translated = Runtime.MenuText(original);
+        if (translated != original) label = Runtime.ImText(translated);
+    }
+
+    public static ImString LocalizeStaticLabel(ImString label)
+    {
+        if (StaticLabels.Contains(label.ToString())) LocalizeMenuLabel(ref label);
+        return label;
+    }
+
+    public static ImString LocalizeHudTitle(ImString label)
+    {
+        string original = label.ToString();
+        int separator = original.IndexOf("##", StringComparison.Ordinal);
+        string visible = separator < 0 ? original : original[..separator];
+        if (HudTitles.Contains(visible)) LocalizeMenuLabel(ref label);
+        return label;
+    }
+
+    [HarmonyTranspiler]
+    public static IEnumerable<CodeInstruction> TranslateStaticMenus(IEnumerable<CodeInstruction> instructions, MethodBase __originalMethod)
+    {
+        bool hud = __originalMethod.DeclaringType == typeof(GaugeCanvas);
+        var inputType = hud ? typeof(string) : typeof(ReadOnlySpan<byte>);
+        var lookup = AccessTools.Method(typeof(MenuTextPatch), hud ? nameof(LocalizeHudTitle) : nameof(LocalizeStaticLabel));
+        foreach (var instruction in instructions)
+        {
+            yield return instruction;
+            if (instruction.opcode == OpCodes.Call && instruction.operand is MethodInfo method
+                && method.DeclaringType == typeof(ImString) && method.Name == "op_Implicit"
+                && method.GetParameters()[0].ParameterType == inputType)
+                yield return new CodeInstruction(OpCodes.Call, lookup);
+        }
+    }
+}
+
+[HarmonyPatch(typeof(ConsoleWidgets), "DrawButtonCore")]
+public static class ButtonCaptionPatch
+{
+    [HarmonyPrefix]
+    public static void LocalizeCaption(ref ReadOnlySpan<char> label)
+    {
+        string original = label.ToString();
+        string translated = Runtime.Literal(original);
+        if (translated != original) label = translated.AsSpan();
+    }
+}
+
+[HarmonyPatch(typeof(ConsoleWidgets), nameof(ConsoleWidgets.ButtonWidth))]
+public static class ButtonWidthPatch
+{
+    [HarmonyPrefix]
+    public static void MeasureCaption(ref ReadOnlySpan<char> label) => ButtonCaptionPatch.LocalizeCaption(ref label);
+}
+
+[HarmonyPatch(typeof(ResourcesPanel), "DrawBar")]
+public static class ResourceNamePatch
+{
+    [HarmonyPrefix]
+    public static void LocalizeName(ref ReadOnlySpan<char> name)
+    {
+        string original = name.ToString();
+        string translated = Runtime.UiText(original);
+        if (translated != original) name = translated.AsSpan();
+    }
+}
+
+[HarmonyPatch(typeof(ConsoleWidgets), nameof(ConsoleWidgets.BeginComboControl))]
+public static class ComboPreviewPatch
+{
+    [HarmonyPrefix]
+    public static void LocalizePreview(ReadOnlySpan<char> id, ref ReadOnlySpan<char> previewText)
+    {
+        if (!id.StartsWith("Settings")) return;
+        string original = previewText.ToString();
+        string translated = Runtime.UiText(original);
+        if (translated != original) previewText = translated.AsSpan();
+    }
+
+    [HarmonyPostfix]
+    public static void EnterPopup(ReadOnlySpan<char> id, bool __result) => Runtime.InSettingsCombo = __result && id.StartsWith("Settings");
+}
+
+[HarmonyPatch(typeof(ConsoleWidgets), nameof(ConsoleWidgets.EndComboControl))]
+public static class ComboEndPatch
+{
+    [HarmonyPostfix]
+    public static void LeavePopup() => Runtime.InSettingsCombo = false;
+}
+
+[HarmonyPatch]
+public static class ComboOptionPatch
+{
+    public static IEnumerable<MethodBase> TargetMethods() => typeof(ImGui).GetMethods(BindingFlags.Public | BindingFlags.Static)
+        .Where(method => method.Name == "Selectable")
+        .Where(method => method.GetParameters().Length > 0 && method.GetParameters()[0].ParameterType == typeof(ImString));
+
+    [HarmonyPrefix]
+    public static void LocalizeOption(ref ImString label)
+    {
+        if (!Runtime.InSettingsCombo) return;
+        string original = label.ToString();
+        string translated = Runtime.MenuText(original);
+        if (translated != original) label = Runtime.ImText(translated);
+    }
+}
+
+[HarmonyPatch(typeof(ConsoleWidgets), nameof(ConsoleWidgets.Tooltip))]
+public static class ConsoleTooltipPatch
+{
+    [HarmonyPrefix]
+    public static void LocalizeTooltip(ref ReadOnlySpan<char> text)
+    {
+        string original = text.ToString();
+        string translated = Runtime.TooltipText(original);
+        if (translated != original) text = translated.AsSpan();
+    }
+}
+
+[HarmonyPatch]
+public static class HelperTooltipPatch
+{
+    public static IEnumerable<MethodBase> TargetMethods() => typeof(ImGuiHelper).GetMethods(BindingFlags.Public | BindingFlags.Static)
+        .Where(method => method.Name == nameof(ImGuiHelper.DrawTooltip))
+        .Where(method => method.GetParameters().Length > 0 && method.GetParameters()[0].ParameterType == typeof(ImString));
+
+    [HarmonyPrefix]
+    public static void LocalizeTooltip(ref ImString tooltip)
+    {
+        string original = tooltip.ToString();
+        string translated = Runtime.TooltipText(original);
+        if (translated != original) tooltip = Runtime.ImText(translated);
+    }
+}
+
+[HarmonyPatch(typeof(KSA.Program), "DrawProgramMenusHook")]
+public static class LanguageMenuPatch
+{
+    [HarmonyPostfix]
+    public static void Draw()
+    {
+        if (!ImGui.BeginMenu("Language / 语言")) return;
+        foreach (var pack in Runtime.Packs.Values)
+        {
+            if (ImGui.MenuItem(pack.DisplayName, default(ImString), Runtime.SelectedLocale == pack.Locale))
+                Runtime.ApplyLanguage(pack.Locale);
+        }
+        ImGui.EndMenu();
+    }
+}

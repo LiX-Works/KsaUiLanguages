@@ -1,0 +1,6 @@
+{
+  "retain": ["RCS", "Δv", "TWR", "Isp", "EVA", "IVA", "HUD", "UT", "MET", "SOI", "MMH", "NTO", "STAR", "SURF", "ORBT", "OVEL", "TGT", "BURN"],
+  "approach": "Translate common menus, settings, resource names and explanations; retain familiar flight abbreviations, units and machine identifiers.",
+  "gauge_buttons": "Keep short attitude-control labels for now and translate the explanatory tooltips.",
+  "scope": "KSA 2026.10.7.5541; partial UI localization, not a complete game translation."
+}
