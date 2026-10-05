@@ -135,6 +135,7 @@ public static class EditorFieldCaptionPatch
 
     public static ImString DisplayCaption(ImString label)
     {
+        if (Runtime.StartupUiDepth > 0) return Runtime.ImText(Runtime.StartupText(label.ToString()));
         if (Runtime.EditorUiDepth <= 0) return label;
         string original = label.ToString();
         string text = Runtime.EditorText(original);
@@ -142,16 +143,16 @@ public static class EditorFieldCaptionPatch
     }
 
     public static bool CelestialCombo(ImString id, ImString preview, ImGuiComboFlags flags)
-        => ImGui.BeginCombo(id, Runtime.EditorUiDepth > 0 ? Runtime.ImText(Runtime.EditorNativeText(preview.ToString(), 1)) : preview, flags);
+        => ImGui.BeginCombo(id, Runtime.EditorUiDepth > 0 || Runtime.StartupUiDepth > 0 ? Runtime.ImText(Runtime.EditorNativeText(preview.ToString(), 1)) : preview, flags);
 
     public static bool LocationCombo(ImString id, ImString preview, ImGuiComboFlags flags)
-        => ImGui.BeginCombo(id, Runtime.EditorUiDepth > 0 ? Runtime.ImText(Runtime.EditorNativeText(preview.ToString(), 2)) : preview, flags);
+        => ImGui.BeginCombo(id, Runtime.EditorUiDepth > 0 || Runtime.StartupUiDepth > 0 ? Runtime.ImText(Runtime.EditorNativeText(preview.ToString(), 2)) : preview, flags);
 
     public static bool CelestialOption(ImString label, bool selected, ImGuiSelectableFlags flags, in float2? size)
-        => ImGui.Selectable(Runtime.EditorUiDepth > 0 ? Runtime.ImText(Runtime.EditorNativeSelectable(label.ToString(), 1)) : label, selected, flags, in size);
+        => ImGui.Selectable(Runtime.EditorUiDepth > 0 || Runtime.StartupUiDepth > 0 ? Runtime.ImText(Runtime.EditorNativeSelectable(label.ToString(), 1)) : label, selected, flags, in size);
 
     public static bool LocationOption(ImString label, bool selected, ImGuiSelectableFlags flags, in float2? size)
-        => ImGui.Selectable(Runtime.EditorUiDepth > 0 ? Runtime.ImText(Runtime.EditorNativeSelectable(label.ToString(), 2)) : label, selected, flags, in size);
+        => ImGui.Selectable(Runtime.EditorUiDepth > 0 || Runtime.StartupUiDepth > 0 ? Runtime.ImText(Runtime.EditorNativeSelectable(label.ToString(), 2)) : label, selected, flags, in size);
 
     [HarmonyTranspiler]
     public static IEnumerable<CodeInstruction> Translate(IEnumerable<CodeInstruction> instructions, MethodBase __originalMethod)

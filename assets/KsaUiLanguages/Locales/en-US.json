@@ -4,5 +4,7 @@
   "fontFile": "KsaUiNotoSC.ttf",
   "native": {},
   "literals": {},
-  "editor": {}
+  "editor": {},
+  "startup": {},
+  "parts": {}
 }

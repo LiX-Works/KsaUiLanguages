@@ -1,0 +1,1016 @@
+{
+  "game_version": "2026.10.7.5541",
+  "purpose": "English UI templates for locating and reviewing the independently authored translations. Not game source code or a license for game assets.",
+  "entries": [
+    {
+      "id": "AlertSimulationPaused",
+      "english": "Simulation paused",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertAutoWarpActive",
+      "english": "Auto warp active",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertControlNotActive",
+      "english": "Control not active for the followed vehicle",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertNoEnginesActive",
+      "english": "No active engines",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertNoPropellantActive",
+      "english": "No propellant for active engines",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertFuelTransferNoPower",
+      "english": "Fuel transfer requires electrical power",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertFuelTransferDonorDisabled",
+      "english": "Fuel transfer blocked: propellant use is disabled on the source tank",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertThrottleGLoadLimited",
+      "english": "Throttle limited to stay under the g-force limit",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertNearLimitGForce",
+      "english": "Vehicle is close to its maximum g-force load!",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertNearLimitAerodynamic",
+      "english": "Vehicle is close to its maximum aerodynamic load!",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertDuplicateBurn",
+      "english": "Duplicate burn.",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertBurnOnStaleFlightPlan",
+      "english": "Cannot create a burn on a stale flight plan.",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertTransferBurnOtherBurns",
+      "english": "Cannot create a transfer burn: the vehicle has other active burns.",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertFixedCamera",
+      "english": "Fixed camera",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertFreeCamera",
+      "english": "Free camera",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertIvaCamera",
+      "english": "IVA camera",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertOrbitCamera",
+      "english": "Orbit camera",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertFrameCamera",
+      "english": "{Frame} camera",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertSimulationRealTime",
+      "english": "Simulation real time",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertFuelPortExists",
+      "english": "That part already has a fuel port: click the port instead",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertCannotLoadLaunchVehicle",
+      "english": "Cannot load the vehicle to launch",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertVehicleRecovered",
+      "english": "Vehicle recovered",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertAutoWarpStopped",
+      "english": "Auto warp stopped",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertTargetSet",
+      "english": "Target set: {Target}",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertTargetUnset",
+      "english": "Target unset.",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertControlPointReset",
+      "english": "Control point reset.",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertControllingFrom",
+      "english": "Controlling from: {Name}",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertCannotCreateTransferBurn",
+      "english": "Cannot create a transfer burn",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertTransferBurnImpacts",
+      "english": "Cannot create a transfer burn here: the burn will impact before escaping.",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertTransferBurnSoiTime",
+      "english": "Cannot create a transfer burn here: allow enough time to exit the sphere of influence.",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertAutoBurnStoppedNextLoaded",
+      "english": "Auto burn stopped: out of propellant. Next burn loaded.",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertAutoBurnStoppedNextLoadedVehicle",
+      "english": "{Vehicle}: auto burn stopped, out of propellant. Next burn loaded.",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertAutoBurnStopped",
+      "english": "Auto burn stopped: out of propellant.",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertAutoBurnStoppedVehicle",
+      "english": "{Vehicle}: auto burn stopped, out of propellant.",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertSlowDownBurnNotReplanned",
+      "english": "Slow down burn could not be re-planned.",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertSlowDownBurnNotReplannedVehicle",
+      "english": "{Vehicle}: slow down burn could not be re-planned.",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertSlowDownBurnReplanned",
+      "english": "Slow down burn re-planned.",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertSlowDownBurnReplannedVehicle",
+      "english": "{Vehicle}: slow down burn re-planned.",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertAutoBurnCompleteNextLoaded",
+      "english": "Auto burn complete: next burn loaded.",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertAutoBurnCompleteNextLoadedVehicle",
+      "english": "{Vehicle}: auto burn complete, next burn loaded.",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertAutoBurnComplete",
+      "english": "Auto burn complete.",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertAutoBurnCompleteVehicle",
+      "english": "{Vehicle}: auto burn complete.",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertNearLimitHydrodynamic",
+      "english": "Vehicle is close to its maximum hydrodynamic load!",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertWreckageGroundImpact",
+      "english": "Vehicle destroyed by hard impact with the ground!",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertWreckageOceanImpact",
+      "english": "Vehicle destroyed by hard impact with the ocean!",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertWreckageCollision",
+      "english": "Vehicle destroyed by a collision!",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertWreckageExcessiveGForce",
+      "english": "Vehicle destroyed by excessive g-force!",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertWreckageAerodynamicForces",
+      "english": "Vehicle destroyed by excessive aerodynamic forces!",
+      "group": "alerts"
+    },
+    {
+      "id": "AlertWreckageHydrodynamicForces",
+      "english": "Vehicle destroyed by excessive hydrodynamic forces!",
+      "group": "alerts"
+    },
+    {
+      "id": "SettingsWindowTitle",
+      "english": "Settings",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsMenuApply",
+      "english": "Apply",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsMenuCancel",
+      "english": "Cancel",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsMenuResetSettings",
+      "english": "Reset Settings",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsMenuDiscard",
+      "english": "Discard",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsMenuResetKeybindings",
+      "english": "Reset Keybindings",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsDisplayMode",
+      "english": "Mode",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsDisplayScreen",
+      "english": "Screen",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsDisplayResolution",
+      "english": "Resolution",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsDisplayRefreshRate",
+      "english": "Refresh Rate",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsDisplayAntiAliasing",
+      "english": "Anti-Aliasing",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsDisplayFieldOfView",
+      "english": "Field of View",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsDisplayVsync",
+      "english": "Vsync",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsDisplayFrameQueueLimit",
+      "english": "Frames Queued Ahead",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsDisplayMaxFrameRate",
+      "english": "Max Frame Rate",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsDisplayAlwaysOnTop",
+      "english": "Always on Top",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsGeneral",
+      "english": "General",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsStars",
+      "english": "Stars",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsMilkyWayQuality",
+      "english": "Milky Way Quality",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsVesselAmbientLighting",
+      "english": "Ambient Lighting",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsAmbientOcclusion",
+      "english": "Ambient Occlusion",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsThinFilmInterference",
+      "english": "Thin Film Interference",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsTonemapper",
+      "english": "Tonemapper",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsTonemapExposure",
+      "english": "Tonemap Exposure",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsTonemapGamma",
+      "english": "Tonemap Gamma",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsUiPixelCulling",
+      "english": "UI Pixel Culling",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsShadowsRegion",
+      "english": "Shadows",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsShadowsLights",
+      "english": "Lights",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsShadowsLightsSize",
+      "english": "Lights Size",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsShadowsLightsSlots",
+      "english": "Lights Slots",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsShadowsHardShadowsOnly",
+      "english": "Hard Shadows Only",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsShadowsVessels",
+      "english": "Vessels",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsShadowsVesselOnVolumetricExhausts",
+      "english": "Vessel Shadows On Volumetric Exhausts",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsShadowsTerrain",
+      "english": "Terrain",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsShadowsTerrainMap",
+      "english": "Terrain Map",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsShadowsCascadedShadowMap",
+      "english": "Cascaded Shadow Map",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsShadowsCascadedShadowFilter",
+      "english": "Cascaded Shadow Filter",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsShadowsSkybox",
+      "english": "Skybox",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsShadowsClouds",
+      "english": "Clouds",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsTexturesRegion",
+      "english": "Textures",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsTexturesVessels",
+      "english": "Vessels",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsTexturesTerrains",
+      "english": "Terrains",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsTexturesPartThumbnails",
+      "english": "Part Thumbnails",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsTextureStreamingRegion",
+      "english": "Texture Streaming",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsTextureStreamingEnabled",
+      "english": "Enabled",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsTextureStreamingBudget",
+      "english": "VRAM Budget",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsTerrainRegion",
+      "english": "Terrain",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsTerrainTessellation",
+      "english": "Tessellation",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsGroundClutterRegion",
+      "english": "Ground Clutter",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsGroundClutter",
+      "english": "Ground Clutter",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsGroundClutterTerrainBlending",
+      "english": "Terrain Blending",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsGroundClutterShadowCasting",
+      "english": "Cast Shadows",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsOceanRegion",
+      "english": "Ocean",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsOcean",
+      "english": "Ocean",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsOceanSimulationQuality",
+      "english": "Simulation Quality",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsOceanHeightQueries",
+      "english": "Height queries",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsPlanetaryRingsRegion",
+      "english": "Planetary rings",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsPlanetaryRings",
+      "english": "Rings",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsPlanetaryRingsVolumetricDust",
+      "english": "Volumetric dust",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsPlanetaryRingsMeshes",
+      "english": "Meshes",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsVolumetricsRegion",
+      "english": "Volumetrics",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsVolumetricsAtmosphere",
+      "english": "Atmosphere",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsVolumetricsGodrays",
+      "english": "Godrays",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsVolumetricsClouds",
+      "english": "Clouds",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsVolumetricsPlumeTrails",
+      "english": "Plume trails",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsVolumetricsExplosions",
+      "english": "Explosions",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsVolumetricsCloudQuality",
+      "english": "Cloud and trails upscaling",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsVolumetricsExhaustQuality",
+      "english": "Exhaust Quality",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsVolumetricsMaxExhaustInstances",
+      "english": "Maximum Exhaust Instances",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsBloomsRegion",
+      "english": "Blooms, The Sun, and Lens Flares",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsBloomsLensFlares",
+      "english": "Lens Flares",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsBloomsLensFlareIntensities",
+      "english": "Lens Flare Intensities",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsBloomsGlobalBloom",
+      "english": "Global Bloom",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsBloomsThresholdBloom",
+      "english": "Threshold Bloom",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsDistantGlintsRegion",
+      "english": "Distant Glints",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsDistantGlints",
+      "english": "Show Distant Glints",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsVesselEffectsRegion",
+      "english": "Vessel Effects",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsVesselFrost",
+      "english": "Frost",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsVesselWater",
+      "english": "Water",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsVesselDeformation",
+      "english": "Impact Dents",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsVesselDeformationQuality",
+      "english": "Impact Dent Quality",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsKittensRegion",
+      "english": "Kittens",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsKittensFurQuality",
+      "english": "Fur Quality",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsParticlesRegion",
+      "english": "Particles",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsParticles",
+      "english": "Particles",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsParticleQuality",
+      "english": "Particle Quality",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsAmbientOcclusionRegion",
+      "english": "Ambient Occlusion",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsAmbientOcclusionQuality",
+      "english": "Quality",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsAmbientOcclusionBlurPasses",
+      "english": "Blur Passes",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsRaytracingRegion",
+      "english": "Raytracing",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsRaytracingIvaRayTracing",
+      "english": "IVA Ray Tracing",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsRaytracingReflectionBounces",
+      "english": "Reflection Bounces",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsRaytracingOpaqueReflectionResolutionScale",
+      "english": "Opaque Reflection Resolution Scale",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsRaytracingTranslucentReflectionResolutionScale",
+      "english": "Translucent Reflection Resolution Scale",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsRaytracingIndirectLightingBounces",
+      "english": "Indirect Lighting Bounces",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsRaytracingIndirectLightingResolutionScale",
+      "english": "Indirect Lighting Resolution Scale",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsRaytracingShadowResolutionScale",
+      "english": "Shadow Resolution Scale",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsDebugRegion",
+      "english": "Debug",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsGraphicsDebugShaderHotReloading",
+      "english": "Shader hot reloading (enabling requires restart).",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsAudioGeneral",
+      "english": "General",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsAudioMasterVolume",
+      "english": "Master Volume",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsAudioSfxVolume",
+      "english": "Sfx Volume",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsAudioUiVolume",
+      "english": "UI Volume",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsAudioMusicVolume",
+      "english": "Music Volume",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsInterfaceGeneral",
+      "english": "General",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsInterfaceCelestialNames",
+      "english": "Celestial Names",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsInterfaceLocationNames",
+      "english": "Location Names",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsInterfaceAutoHideMenuBar",
+      "english": "Auto-Hide Menu Bar",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsInterfaceFrameStatistics",
+      "english": "Frame Statistics",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsInterfaceManualOrbitLineVisibility",
+      "english": "Manual Orbit Line Visibility",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsInterfaceMapGridToggle",
+      "english": "Map Grid Toggle",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsInterfaceCrewPortraitCameras",
+      "english": "Crew Portrait Cameras",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsInterfaceCameraJumpTime",
+      "english": "Camera Jump Time",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsInterfaceMouseHoverHighlightColor",
+      "english": "Mouse Hover Highlight Color",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsInterfaceGaugesRegion",
+      "english": "Gauges",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsInterfaceGaugesSharpness",
+      "english": "Sharpness",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsInterfaceGaugeScale",
+      "english": "HUD Scale",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsInterfaceFontRegion",
+      "english": "Font",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsInterfaceFont",
+      "english": "Font",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsInterfaceScale",
+      "english": "Interface Scale",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsInterfaceFontDensity",
+      "english": "Density",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsInterfaceFontPixelSnap",
+      "english": "Pixel Snap",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsInterfaceOrbitLinesRegion",
+      "english": "Orbit Lines",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsInterfaceOrbitTrackColor",
+      "english": "Track Color",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsInterfaceOrbitPatchColor",
+      "english": "Patch Color",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsInterfaceOrbitBurnColor",
+      "english": "Burn Color",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsInterfaceOrbitInactiveColor",
+      "english": "Inactive Color",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsInterfaceEditorRegion",
+      "english": "Editor",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsInterfaceEditorHideEdgeOnRotationRings",
+      "english": "Hide Edge-On Rotation Rings",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsInterfaceSystemRegion",
+      "english": "System",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsInterfaceSystemConfigPopup",
+      "english": "Config Popup",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsInterfaceSystemWelcomePopup",
+      "english": "Welcome Popup",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsInterfaceSystemCheckForUpdates",
+      "english": "Check for Updates",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsInterfaceSystemShowChangelogOnUpdated",
+      "english": "Show Changelog on Updated",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsControlsCameraSensitivityRegion",
+      "english": "Camera Sensitivity",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsControlsMouseLook",
+      "english": "Mouse Look",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsControlsRoll",
+      "english": "Roll",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsControlsEditorFreeCamScroll",
+      "english": "Editor Free Camera Scroll Moves Camera",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsControlsKeyAssignmentsRegion",
+      "english": "Key Assignments",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsSimulationPerformanceRegion",
+      "english": "Performance",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsSimulationOrbitSolvers",
+      "english": "Orbit Solvers",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsSimulationMinTargetFramerate",
+      "english": "Minimum Target Framerate",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsSimulationMaxFlightComputerRate",
+      "english": "Maximum Flight Computer Rate",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsSimulationGroundClutterRegion",
+      "english": "Ground Clutter",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsSimulationGroundClutterCollisions",
+      "english": "[Experimental] Enable Collisions",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsConsoleOnBoot",
+      "english": "OnBoot",
+      "group": "settings"
+    },
+    {
+      "id": "SettingsConsoleOnLoad",
+      "english": "OnLoad",
+      "group": "settings"
+    },
+    {
+      "id": "FlightComputerTooltipNoBurn",
+      "english": "No burn currently exists.",
+      "group": "flight_computer_tooltips"
+    },
+    {
+      "id": "FlightComputerTooltipBurnNotTransferred",
+      "english": "Transfer the departure burn to your flight plan first.",
+      "group": "flight_computer_tooltips"
+    },
+    {
+      "id": "FlightComputerTooltipNoTarget",
+      "english": "No target currently set.",
+      "group": "flight_computer_tooltips"
+    },
+    {
+      "id": "FlightComputerTooltipNoEngine",
+      "english": "No engine is currently active.",
+      "group": "flight_computer_tooltips"
+    },
+    {
+      "id": "FlightComputerTooltipBurnEmpty",
+      "english": "Burn duration is empty.",
+      "group": "flight_computer_tooltips"
+    },
+    {
+      "id": "FlightComputerTooltipNoControl",
+      "english": "No vehicle control module.",
+      "group": "flight_computer_tooltips"
+    }
+  ]
+}

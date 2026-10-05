@@ -1,0 +1,189 @@
+{
+  "game_version": "2026.10.7.5541",
+  "purpose": "Independent naming evidence for translated display names; original template IDs remain unchanged.",
+  "parts": {
+    "CoreCommandA_Prefab_MediumCapsuleVariantA": "中型乘员舱 A",
+    "CorePropulsionA_Prefab_SRBA1": "固体助推器 SRB-A1",
+    "CorePropulsionA_Prefab_SRBA2": "固体助推器 SRB-A2",
+    "CorePropulsionA_Prefab_SRBB1": "固体助推器 SRB-B1",
+    "CorePropulsionA_Prefab_SRBC1": "固体助推器 SRB-C1",
+    "CoreCouplingA_Prefab_DecouplerQuarterWA": "0.25 米分离器 WA",
+    "CoreCouplingA_Prefab_DecouplerQuarterWB": "0.25 米分离器 WB",
+    "CoreCouplingA_Prefab_DecouplerHalfWA": "0.5 米分离器 WA",
+    "CoreCouplingA_Prefab_DecouplerHalfWB": "0.5 米分离器 WB",
+    "CoreCouplingA_Prefab_Decoupler1WA": "1 米分离器 WA",
+    "CoreCouplingA_Prefab_Decoupler1WB": "1 米分离器 WB",
+    "CoreCouplingA_Prefab_Decoupler2WA": "2 米分离器 WA",
+    "CoreCouplingA_Prefab_Decoupler2WB": "2 米分离器 WB",
+    "CoreCouplingA_Prefab_Decoupler3WA": "3 米分离器 WA",
+    "CoreCouplingA_Prefab_Decoupler3WB": "3 米分离器 WB",
+    "CoreFuelTankA_Prefab_LF1W1HA": "1 米推进剂箱 LF1W1HA",
+    "CoreFuelTankA_Prefab_MP1W1HA": "1 米推进剂箱 MP1W1HA",
+    "CoreFuelTankB_Prefab_BaypartTankA": "球形推进剂箱 A",
+    "CoreFuelTankB_Prefab_BaypartTankC": "球形推进剂箱 C",
+    "CorePropulsionA_Prefab_EngineA2": "LR91 海平面型发动机 A2"
+  },
+  "evidence": [
+    {
+      "id": "CoreCommandA_Prefab_MediumCapsuleVariantA",
+      "name": "中型乘员舱 A",
+      "source": "Content/Core/CoreCommandAAssets.xml; Content/Core/CoreCommandAGameData.xml",
+      "reason": "PartGameData 标注 Capsules，Diameter=1 m、Mass=1800 kg、电池容量=20000 J、耗电=10 W；未设 DisplayName。名称按 MediumCapsuleVariantA 和现有 Capsules→乘员舱术语拟定。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name"
+    },
+    {
+      "id": "CorePropulsionA_Prefab_SRBA1",
+      "name": "固体助推器 SRB-A1",
+      "source": "Content/Core/CorePropulsionAAssets.xml; Content/Core/CorePropulsionAGameData.xml",
+      "reason": "PartGameData 标注 Booster，包含 SolidMotor，Diameter=0.125 m；未设 DisplayName。保留 SRB 型号，不添加尺寸等级。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name"
+    },
+    {
+      "id": "CorePropulsionA_Prefab_SRBA2",
+      "name": "固体助推器 SRB-A2",
+      "source": "Content/Core/CorePropulsionAAssets.xml; Content/Core/CorePropulsionAGameData.xml",
+      "reason": "PartGameData 标注 Booster，包含 SolidMotor，Diameter=0.125 m；未设 DisplayName。保留 SRB 型号，不添加尺寸等级。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name"
+    },
+    {
+      "id": "CorePropulsionA_Prefab_SRBB1",
+      "name": "固体助推器 SRB-B1",
+      "source": "Content/Core/CorePropulsionAAssets.xml; Content/Core/CorePropulsionAGameData.xml",
+      "reason": "PartGameData 标注 Booster，包含 SolidMotor，Diameter=0.25 m；未设 DisplayName。保留 SRB 型号，不添加尺寸等级。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name"
+    },
+    {
+      "id": "CorePropulsionA_Prefab_SRBC1",
+      "name": "固体助推器 SRB-C1",
+      "source": "Content/Core/CorePropulsionAAssets.xml; Content/Core/CorePropulsionAGameData.xml",
+      "reason": "PartGameData 标注 Booster，包含 SolidMotor，Diameter=0.5 m；未设 DisplayName。保留 SRB 型号，不添加尺寸等级。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name"
+    },
+    {
+      "id": "CoreCouplingA_Prefab_DecouplerQuarterWA",
+      "name": "0.25 米分离器 WA",
+      "source": "Content/Core/CoreCouplingAAssets.xml; Content/Core/CoreCouplingAGameData.xml",
+      "reason": "PartGameData 标注 Coupling，包含 Decoupler，Diameter=0.25 m；未设 DisplayName。保留 WA 变体后缀。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name"
+    },
+    {
+      "id": "CoreCouplingA_Prefab_DecouplerQuarterWB",
+      "name": "0.25 米分离器 WB",
+      "source": "Content/Core/CoreCouplingAAssets.xml; Content/Core/CoreCouplingAGameData.xml",
+      "reason": "PartGameData 标注 Coupling，包含 Decoupler，Diameter=0.25 m；未设 DisplayName。保留 WB 变体后缀。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name"
+    },
+    {
+      "id": "CoreCouplingA_Prefab_DecouplerHalfWA",
+      "name": "0.5 米分离器 WA",
+      "source": "Content/Core/CoreCouplingAAssets.xml; Content/Core/CoreCouplingAGameData.xml",
+      "reason": "PartGameData 标注 Coupling，包含 Decoupler，Diameter=0.5 m；未设 DisplayName。保留 WA 变体后缀。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name"
+    },
+    {
+      "id": "CoreCouplingA_Prefab_DecouplerHalfWB",
+      "name": "0.5 米分离器 WB",
+      "source": "Content/Core/CoreCouplingAAssets.xml; Content/Core/CoreCouplingAGameData.xml",
+      "reason": "PartGameData 标注 Coupling，包含 Decoupler，Diameter=0.5 m；未设 DisplayName。保留 WB 变体后缀。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name"
+    },
+    {
+      "id": "CoreCouplingA_Prefab_Decoupler1WA",
+      "name": "1 米分离器 WA",
+      "source": "Content/Core/CoreCouplingAAssets.xml; Content/Core/CoreCouplingAGameData.xml",
+      "reason": "PartGameData 标注 Coupling，包含 Decoupler，Diameter=1 m；未设 DisplayName。保留 WA 变体后缀。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name"
+    },
+    {
+      "id": "CoreCouplingA_Prefab_Decoupler1WB",
+      "name": "1 米分离器 WB",
+      "source": "Content/Core/CoreCouplingAAssets.xml; Content/Core/CoreCouplingAGameData.xml",
+      "reason": "PartGameData 标注 Coupling，包含 Decoupler，Diameter=1 m；未设 DisplayName。保留 WB 变体后缀。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name"
+    },
+    {
+      "id": "CoreCouplingA_Prefab_Decoupler2WA",
+      "name": "2 米分离器 WA",
+      "source": "Content/Core/CoreCouplingAAssets.xml; Content/Core/CoreCouplingAGameData.xml",
+      "reason": "PartGameData 标注 Coupling，包含 Decoupler，Diameter=2 m；未设 DisplayName。保留 WA 变体后缀。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name"
+    },
+    {
+      "id": "CoreCouplingA_Prefab_Decoupler2WB",
+      "name": "2 米分离器 WB",
+      "source": "Content/Core/CoreCouplingAAssets.xml; Content/Core/CoreCouplingAGameData.xml",
+      "reason": "PartGameData 标注 Coupling，包含 Decoupler，Diameter=2 m；未设 DisplayName。保留 WB 变体后缀。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name"
+    },
+    {
+      "id": "CoreCouplingA_Prefab_Decoupler3WA",
+      "name": "3 米分离器 WA",
+      "source": "Content/Core/CoreCouplingAAssets.xml; Content/Core/CoreCouplingAGameData.xml",
+      "reason": "PartGameData 标注 Coupling，包含 Decoupler，Diameter=3 m；未设 DisplayName。保留 WA 变体后缀。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name"
+    },
+    {
+      "id": "CoreCouplingA_Prefab_Decoupler3WB",
+      "name": "3 米分离器 WB",
+      "source": "Content/Core/CoreCouplingAAssets.xml; Content/Core/CoreCouplingAGameData.xml",
+      "reason": "PartGameData 标注 Coupling，包含 Decoupler，Diameter=3 m；未设 DisplayName。保留 WB 变体后缀。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name"
+    },
+    {
+      "id": "CoreFuelTankA_Prefab_LF1W1HA",
+      "name": "1 米推进剂箱 LF1W1HA",
+      "source": "Content/Core/CoreFuelTankAAssets.xml; Content/Core/CoreFuelTankAGameData.xml",
+      "reason": "PartGameData 标注 Fuel Tanks，Diameter=1 m；未设 DisplayName。保留 LF1W1HA 型号，不展开未核实的缩写。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name"
+    },
+    {
+      "id": "CoreFuelTankA_Prefab_MP1W1HA",
+      "name": "1 米推进剂箱 MP1W1HA",
+      "source": "Content/Core/CoreFuelTankAAssets.xml; Content/Core/CoreFuelTankAGameData.xml",
+      "reason": "PartGameData 标注 Fuel Tanks，Diameter=1 m，含多个储箱模块；未设 DisplayName。保留 MP1W1HA 型号，不展开未核实的缩写。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name"
+    },
+    {
+      "id": "CoreFuelTankB_Prefab_BaypartTankA",
+      "name": "球形推进剂箱 A",
+      "source": "Content/Core/CoreFuelTankBAssets.xml; Content/Core/CoreFuelTankBGameData.xml",
+      "reason": "Fuel Tanks 标签，含一个球形储箱模块；没有货舱功能证据，采用结构特征保守拟名。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name"
+    },
+    {
+      "id": "CoreFuelTankB_Prefab_BaypartTankC",
+      "name": "球形推进剂箱 C",
+      "source": "Content/Core/CoreFuelTankBAssets.xml; Content/Core/CoreFuelTankBGameData.xml",
+      "reason": "Fuel Tanks 标签，含两个球形储箱模块；没有货舱功能证据，采用结构特征保守拟名。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name"
+    },
+    {
+      "id": "CorePropulsionA_Prefab_EngineA2",
+      "name": "LR91 海平面型发动机 A2",
+      "source": "Content/Core/CorePropulsionAAssets.xml; Content/Core/CorePropulsionAGameData.xml",
+      "reason": "该项明确有 DisplayName=LR91 Sea，EditorTag=Engines、Diameter=1 m。此映射翻译现有英文名，并用 A2 保留部件变体。",
+      "confidence": "medium",
+      "name_basis": "existing_english_name_translation"
+    }
+  ],
+  "review_note": "技术数据核对和中文表达复核分开完成；名称不表示官方译名，尺寸来自 Diameter。"
+}

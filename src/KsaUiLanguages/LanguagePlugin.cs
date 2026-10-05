@@ -23,6 +23,8 @@ public sealed class LanguagePack
     public Dictionary<string, string> Ui { get; set; } = new();
     public Dictionary<string, string> Tooltips { get; set; } = new();
     public Dictionary<string, string> Editor { get; set; } = new();
+    public Dictionary<string, string> Startup { get; set; } = new();
+    public Dictionary<string, string> Parts { get; set; } = new();
 }
 
 [StarMapMod]
@@ -84,6 +86,7 @@ public static class Runtime
     public static string SelectedLocale { get; private set; } = "zh-CN";
     public static bool InSettingsCombo { get; set; }
     [ThreadStatic] public static int EditorUiDepth;
+    [ThreadStatic] public static int StartupUiDepth;
     public static LanguagePack CurrentPack { get; private set; } = new();
     public static string FontPath => Path.Combine(ModRoot, "Fonts", Path.GetFileName(CurrentPack.FontFile));
     public static string FontName => Path.GetFileNameWithoutExtension(FontPath);
@@ -135,7 +138,7 @@ public static class Runtime
             _originalNavLabels ??= (string[])labels.Clone();
             for (int i = 0; i < labels.Length; i++) labels[i] = Literal(_originalNavLabels[i]);
         }
-        Log($"Language {locale}: {Translations.Count} native, {pack.Literals.Count} literals, {pack.Ui.Count} UI labels, {pack.Tooltips.Count} tooltips, {pack.Editor.Count} editor labels.");
+        Log($"Language {locale}: {Translations.Count} native, {pack.Literals.Count} literals, {pack.Ui.Count} UI labels, {pack.Tooltips.Count} tooltips, {pack.Editor.Count} editor labels, {pack.Startup.Count} startup labels, {pack.Parts.Count} part names.");
     }
 
     private static IEnumerable<string> Tokens(string text) => Regex.Matches(text, @"\{[^{}]+\}")
@@ -158,6 +161,27 @@ public static class Runtime
     public static string TooltipText(string original) => CurrentPack.Tooltips.GetValueOrDefault(original, original);
 
     public static string EditorText(string original) => CurrentPack.Editor.GetValueOrDefault(original, original);
+
+    public static string StartupText(string original) => CurrentPack.Startup.GetValueOrDefault(original, original);
+
+    public static string PartName(PartTemplate template)
+        => CurrentPack.Parts.GetValueOrDefault(template.Id, template.DisplayName ?? template.Id);
+
+    public static string PartCaption(Part part)
+    {
+        // Preserve an instance name supplied by the player when the game exposes it.
+        if (part.DisplayName != part.Template.DisplayName && part.DisplayName != part.Template.Id) return part.DisplayName;
+        return CurrentPack.Parts.GetValueOrDefault(part.Template.Id, part.DisplayName);
+    }
+
+    public static string StartupMenuText(string original)
+    {
+        int separator = original.IndexOf("##", StringComparison.Ordinal);
+        string visible = separator < 0 ? original : original[..separator];
+        if (!Packs.Values.Any(pack => pack.Startup.ContainsKey(visible))) return original;
+        int stable = original.IndexOf("###", StringComparison.Ordinal);
+        return StartupText(visible) + (stable >= 0 ? original[stable..] : "###" + original);
+    }
 
     public static string EditorLiteral(string original)
     {
@@ -246,6 +270,7 @@ public static class Runtime
             _originalNavLabels.CopyTo(labels, 0);
         InSettingsCombo = false;
         EditorUiDepth = 0;
+        StartupUiDepth = 0;
     }
 
     public static void Log(string message)

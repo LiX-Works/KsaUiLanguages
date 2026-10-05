@@ -5,11 +5,15 @@
 !/tools/requirements-font.txt
 !/tools/make_installer.ps1
 !/tools/check_installer.ps1
+!/tools/export_dictionary.py
 /installer/payload/
 /installer/package.json
 /assets/NotoSansSC-variable.ttf
 /reference/*
 !/reference/terminology-policy.json
+!/reference/native-source-5541.json
+!/reference/part-name-evidence-5541.json
+!/reference/translation-context.zh-CN.json
 /work/
 /backups/
 /dist/

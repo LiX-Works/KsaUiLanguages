@@ -159,7 +159,45 @@ internal static class Program
             : s.StartsWith("At ") || s.StartsWith("Orbit ") ? KsaUiLanguages.Runtime.EditorNativeSelectable(s, 2) : KsaUiLanguages.Runtime.EditorMenuText(s));
         Require(KsaUiLanguages.Runtime.EditorNativeText("Earth", 1) == "地球", "Launch-body preview is translated");
         Require(KsaUiLanguages.Runtime.EditorNativeText("At CCSFS LC-39A On Earth", 2) == "地球：CCSFS LC-39A", "Location formatting preserves the site identifier");
+        Require(KsaUiLanguages.StartupUiPatch.RegionText("Select System").ToString() == "选择天体系统###Select System", "Startup region headings keep a stable ID");
+        Require(KsaUiLanguages.StartupUiPatch.RegionText("System").ToString() == "System", "Startup field source labels remain unchanged");
+        KsaUiLanguages.Runtime.StartupUiDepth = 1;
+        Require(KsaUiLanguages.EditorFieldCaptionPatch.DisplayCaption("Location").ToString() == "起始地点", "Startup captions use their own context");
+        Require(KsaUiLanguages.Runtime.Literal("START KSA") == "启动 KSA", "Start button caption is translated without changing its action");
+        KsaUiLanguages.Runtime.StartupUiDepth = 0;
+        var startupLabels = new[] { "Solar System (Dense)", "Unlimited", "Testing", "Always Show", "Select System" };
+        var chineseStartupIds = startupLabels.ToDictionary(s => s, KsaUiLanguages.Runtime.StartupMenuText);
+        foreach (var helper in KsaUiLanguages.StartupFieldPatch.TargetMethods())
+        {
+            var startupInstructions = KsaUiLanguages.StartupFieldPatch.Translate(PatchProcessor.GetOriginalInstructions(helper).Select(i => new CodeInstruction(i)), helper).ToList();
+            Require(startupInstructions.Any(i => i.operand is MethodInfo m && m.Name == nameof(KsaUiLanguages.EditorFieldCaptionPatch.DisplayCaption)), "Startup helper caption conversion reaches the actual method: " + helper);
+            if (helper.GetGenericArguments()[0] == typeof(KSA.ConfigOnStartPopup.VehicleObject))
+                Require(!startupInstructions.Any(i => i.operand is MethodInfo m && m.DeclaringType == typeof(KsaUiLanguages.StartupFieldPatch)), "Vehicle names and keys are kept unchanged in startup");
+        }
+        results.Add("PASS: Startup captions, options and original vehicle identifiers");
+        const string capsuleId = "CoreCommandA_Prefab_MediumCapsuleVariantA";
+        var capsuleTemplate = new KSA.PartTemplate { Id = capsuleId, DisplayName = capsuleId };
+        Require(KsaUiLanguages.Runtime.CurrentPack.Parts.ContainsKey(capsuleId), "Confirmed capsule has a Chinese display mapping");
+        Require(KsaUiLanguages.Runtime.PartName(capsuleTemplate).Contains("乘员舱"), "Part tooltip uses the Chinese display name");
+        Require(capsuleTemplate.Id == capsuleId && capsuleTemplate.DisplayName == capsuleId, "The original template ID and name are not mutated");
+        var unknownTemplate = new KSA.PartTemplate { Id = "Unknown_TestPart", DisplayName = "Original Custom Part" };
+        Require(KsaUiLanguages.Runtime.PartName(unknownTemplate) == "Original Custom Part", "Unknown parts retain their original names");
+        var customPart = (KSA.Part)RuntimeHelpers.GetUninitializedObject(typeof(KSA.Part));
+        customPart.Template = capsuleTemplate;
+        typeof(KSA.Part).GetProperty(nameof(KSA.Part.DisplayName))!.SetValue(customPart, "My Capsule");
+        Require(KsaUiLanguages.Runtime.PartCaption(customPart) == "My Capsule", "Player supplied instance names are retained");
+        var tooltipNameMethod = AccessTools.Method(typeof(KSA.PartArchetypes), nameof(KSA.PartArchetypes.AppendTooltip));
+        var tooltipNameInstructions = KsaUiLanguages.PartTooltipNamePatch.Translate(PatchProcessor.GetOriginalInstructions(tooltipNameMethod).Select(i => new CodeInstruction(i))).ToList();
+        Require(tooltipNameInstructions.Count(i => i.operand is MethodInfo m && m.Name == nameof(KsaUiLanguages.Runtime.PartName)) == 1,
+            "Exactly the actual tooltip display-name read is replaced");
+        results.Add("PASS: Part names are display-only and preserve template / custom identifiers");
         KsaUiLanguages.Runtime.ApplyLanguage("en-US");
+        Require(KsaUiLanguages.Runtime.PartName(capsuleTemplate) == capsuleId, "English restores the original part name");
+        results.Add("PASS: Part-name English fallback");
+        foreach (var label in startupLabels)
+            Require(HashGuiId(KsaUiLanguages.Runtime.StartupMenuText(label), 0x735A1913) == HashGuiId(chineseStartupIds[label], 0x735A1913), "Startup option IDs are stable across languages");
+        Require(KsaUiLanguages.Runtime.StartupText("Testing") == "Testing", "Startup option falls back to English");
+        results.Add("PASS: Startup region and option IDs across languages");
         foreach (var original in editorLabels)
         {
             string englishId = original == "Earth" ? KsaUiLanguages.Runtime.EditorNativeSelectable(original, 1)

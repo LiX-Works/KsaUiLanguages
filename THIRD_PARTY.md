@@ -6,6 +6,8 @@ The plugin in src/KsaUiLanguages, checks in src/LanguageChecks, original transla
 
 The MIT license does not relicense the font, game or external dependencies.
 
+English UI templates and game identifiers in the review catalog/reference files are included for translation location and compatibility. The project's MIT license does not relicense the game's original text or assets. Part-name evidence is independently summarized from local game data and contains no game implementation code.
+
 ## Bundled font
 
 - Upstream: [Google Fonts / Noto Sans SC](https://github.com/google/fonts/tree/main/ofl/notosanssc).
