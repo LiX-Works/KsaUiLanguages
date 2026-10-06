@@ -105,7 +105,7 @@ internal static class Program
         results.Add("PASS: Settings-only dropdown translation and stable option IDs");
         ReadOnlySpan<char> tooltip = "Toggles the RCS thrusters.".AsSpan();
         KsaUiLanguages.ConsoleTooltipPatch.LocalizeTooltip(ref tooltip);
-        Require(tooltip.ToString().Contains("姿态控制推进器"), "Gauge tooltip can be explained in Chinese");
+        Require(tooltip.ToString().Contains("RCS 推进器"), "Gauge tooltip can be explained in Chinese");
         results.Add("PASS: Chinese tooltip without changing the RCS label");
         ReadOnlySpan<string> editorSegments = new[] { "PLACE", "TRANS", "ROTATE", "SCALE" };
         KsaUiLanguages.EditorSegmentsPatch.Localize("GizmoTool", ref editorSegments);
@@ -191,6 +191,11 @@ internal static class Program
         Require(tooltipNameInstructions.Count(i => i.operand is MethodInfo m && m.Name == nameof(KsaUiLanguages.Runtime.PartName)) == 1,
             "Exactly the actual tooltip display-name read is replaced");
         results.Add("PASS: Part names are display-only and preserve template / custom identifiers");
+        CheckAuxiliaryCaptions(results);
+        CheckFlightMenus(results);
+        CheckControlCaptions(results);
+        CheckHudWindowCaptions(results);
+        CheckHudContextAndLayouts(results);
         KsaUiLanguages.Runtime.ApplyLanguage("en-US");
         Require(KsaUiLanguages.Runtime.PartName(capsuleTemplate) == capsuleId, "English restores the original part name");
         results.Add("PASS: Part-name English fallback");
@@ -253,6 +258,358 @@ internal static class Program
     {
         __result = Path.Combine(Root, @"work\headless-language-checks");
         return false;
+    }
+
+    private static void CheckAuxiliaryCaptions(List<string> results)
+    {
+        string[] originalTabs = { "ROSTER", "MEMORIAL" };
+        ReadOnlySpan<string> tabs = originalTabs;
+        KsaUiLanguages.RosterTabsPatch.Localize("KittenRosterTabs", ref tabs);
+        Require(tabs.SequenceEqual(new[] { "名单", "纪念" }) && originalTabs.SequenceEqual(new[] { "ROSTER", "MEMORIAL" }),
+            "Roster draw captions change without mutating its shared tab array");
+        ReadOnlySpan<string> foreignTabs = originalTabs;
+        KsaUiLanguages.RosterTabsPatch.Localize("PlayerCustomTabs", ref foreignTabs);
+        Require(foreignTabs.SequenceEqual(originalTabs), "Other segmented controls retain their captions");
+        ReadOnlySpan<char> rosterTitle = "Kitten Roster";
+        KsaUiLanguages.RosterTitlePatch.Localize("KSA-ROS", ref rosterTitle);
+        Require(rosterTitle.ToString() == "乘员名单", "Roster title is translated at drawing time");
+        ReadOnlySpan<char> otherTitle = "Kitten Roster";
+        KsaUiLanguages.RosterTitlePatch.Localize("PlayerWindow", ref otherTitle);
+        Require(otherTitle.ToString() == "Kitten Roster", "Unrelated window signatures are untouched");
+        Require(KsaUiLanguages.RosterCaptionPatch.DisplayCaption("kittens").ToString() == "kittens",
+            "Roster table IDs are untouched");
+        Require(KsaUiLanguages.RosterCaptionPatch.DisplayCaption("Unassigned").ToString() == "未分配",
+            "Plain roster status text contains no hidden widget ID suffix");
+        results.Add("PASS: Roster captions, immutable tab data and window scope");
+
+        var rosterType = typeof(KSA.KittenRosterWindow).GetNestedType("Window", BindingFlags.NonPublic)!;
+        var rosterMethod = AccessTools.Method(rosterType, "Draw");
+        var rosterInstructions = KsaUiLanguages.RosterCaptionPatch.Translate(PatchProcessor.GetOriginalInstructions(rosterMethod)
+            .Select(i => new CodeInstruction(i))).ToList();
+        var dynamicConversion = typeof(ImString).GetMethods().Single(m => m.Name == "op_Implicit" && m.GetParameters()[0].ParameterType == typeof(string));
+        var dynamicInstructions = new[] { new CodeInstruction(System.Reflection.Emit.OpCodes.Call, dynamicConversion) };
+        Require(KsaUiLanguages.RosterCaptionPatch.Translate(dynamicInstructions).Count() == 1,
+            "Player names and vehicle string conversions are not localized");
+        Require(rosterInstructions.Any(i => i.opcode == System.Reflection.Emit.OpCodes.Ldstr && Equals(i.operand, "EVA")),
+            "Roster EVA assignment identifier is retained in the actual method");
+        var celestialMethod = AccessTools.Method(typeof(KSA.Celestial), nameof(KSA.Celestial.DrawCelestialWindowData));
+        var celestialInstructions = KsaUiLanguages.CelestialCaptionPatch.Translate(PatchProcessor.GetOriginalInstructions(celestialMethod)
+            .Select(i => new CodeInstruction(i))).ToList();
+        Require(celestialInstructions.Count(i => i.operand is MethodInfo m && m.DeclaringType == typeof(KsaUiLanguages.CelestialCaptionPatch)) == 6,
+            "Exactly the four celestial readout captions and two yes/no values are translated");
+        Require(KsaUiLanguages.CelestialCaptionPatch.ReadoutText("LAN") == "LAN"
+            && KsaUiLanguages.CelestialCaptionPatch.ReadoutText("N7") == "N7"
+            && KsaUiLanguages.CelestialCaptionPatch.DisplayCaption("X").ToString() == "X",
+            "Orbital abbreviations, numeric formats and axis identifiers are retained");
+        results.Add("PASS: Actual roster and celestial instructions preserve names and numeric readouts");
+
+        var shadowTooltips = (Brutal.Localization.LString[])typeof(KSA.LStrings).GetField("SettingsGraphicsShadowsFilterTooltips")!.GetValue(null)!;
+        Require(shadowTooltips.Length == 3 && shadowTooltips.All(t => KsaUiLanguages.Runtime.TooltipText(t.Template) != t.Template),
+            "All three actual shadow-filter array templates have translated tooltip mappings");
+        results.Add("PASS: Actual shadow-filter tooltip array coverage");
+
+        var headerKeys = new[] { "Name", "Assigned Vehicle", "Missions", "Current Mission Elapsed", "Total Mission Elapsed", "Distance Travelled", "Fastest Speed" };
+        var treeKeys = new[] { "LocalPosition", "OrbitVelocity", "Rotation", "Draw Axes", "Show SOI" };
+        var chineseHeaderIds = headerKeys.ToDictionary(k => k, k => KsaUiLanguages.RosterCaptionPatch.DisplayCaption(k).ToString());
+        var chineseTreeIds = treeKeys.ToDictionary(k => k, k => KsaUiLanguages.CelestialCaptionPatch.DisplayCaption(k).ToString());
+        KsaUiLanguages.Runtime.ApplyLanguage("en-US");
+        foreach (string key in headerKeys)
+            Require(HashGuiId(KsaUiLanguages.RosterCaptionPatch.DisplayCaption(key).ToString(), 0x735A1913) == HashGuiId(chineseHeaderIds[key], 0x735A1913),
+                "Roster column widget IDs are stable across languages: " + key);
+        foreach (string key in treeKeys)
+            Require(HashGuiId(KsaUiLanguages.CelestialCaptionPatch.DisplayCaption(key).ToString(), 0x735A1913) == HashGuiId(chineseTreeIds[key], 0x735A1913),
+                "Celestial tree and checkbox IDs are stable across languages: " + key);
+        tabs = originalTabs;
+        KsaUiLanguages.RosterTabsPatch.Localize("KittenRosterTabs", ref tabs);
+        Require(tabs.SequenceEqual(originalTabs) && KsaUiLanguages.CelestialCaptionPatch.ReadoutText("MASS") == "MASS",
+            "Auxiliary window captions fall back to English");
+        rosterTitle = "Kitten Roster";
+        KsaUiLanguages.RosterTitlePatch.Localize("KSA-ROS", ref rosterTitle);
+        Require(rosterTitle.ToString() == "Kitten Roster", "An existing roster's source title can render in English again");
+        KsaUiLanguages.Runtime.ApplyLanguage("zh-CN");
+        results.Add("PASS: Auxiliary window ID hashes and English round trip");
+    }
+
+    private delegate int FormatMenuCount(ReadOnlySpan<char> label, int count, Span<byte> buffer);
+
+    private static void CheckFlightMenus(List<string> results)
+    {
+        var keys = new[] { "Auto Warp", "Vessels", "Bodies", "Manifest", "Kitten Roster", "Transfer Planner", "Flight Plan",
+            "Ground Track", "Target Track", "Staging", "Threads", "Profiler", "Orbit Camera", "Free Camera", "Map Camera",
+            "Add Camera", "Follow Terrain", "Show Orbit Markers", "Flight Plans", "Celestial Names", "Debug" };
+        var chinese = keys.ToDictionary(k => k, k => KsaUiLanguages.MenuTextPatch.LocalizeStaticLabel(k).ToString());
+        Require(chinese.All(p => p.Value.Split("###")[0] != p.Key), "All screenshot flight-menu labels have Chinese captions");
+        Require(KsaUiLanguages.MenuTextPatch.LocalizeStaticLabel("Hold alt to multiselect").ToString() == "按住 Alt 可多选",
+            "Plain menu instructions contain no hidden ID suffix");
+        foreach (var method in KsaUiLanguages.MenuTextPatch.TargetMethods().Where(m => m.Name is "DrawMenuBar" or "DrawMenuItems"))
+        {
+            var original = PatchProcessor.GetOriginalInstructions(method).Select(i => new CodeInstruction(i)).ToList();
+            var patched = KsaUiLanguages.MenuTextPatch.TranslateStaticMenus(original, method).ToList();
+            int conversions = original.Count(i => i.operand is MethodInfo m && m.DeclaringType == typeof(ImString)
+                && m.Name == "op_Implicit" && m.GetParameters()[0].ParameterType == typeof(ReadOnlySpan<byte>));
+            int wrappers = patched.Count(i => i.operand is MethodInfo m && m.Name == nameof(KsaUiLanguages.MenuTextPatch.LocalizeStaticLabel));
+            Require(conversions > 0 && wrappers == conversions, "All actual static menu conversion sites are covered: " + method);
+        }
+        var categoryMethod = AccessTools.Method(typeof(KSA.Program), "DrawMoveCameraToSubMenu");
+        var categoryInstructions = KsaUiLanguages.MenuTextPatch.TranslateStaticMenus(PatchProcessor.GetOriginalInstructions(categoryMethod)
+            .Select(i => new CodeInstruction(i)), categoryMethod).ToList();
+        Require(categoryInstructions.Count(i => i.operand is MethodInfo m && m.Name == nameof(KsaUiLanguages.MenuTextPatch.FormatCameraCategoryWithCount)) == 1,
+            "Exactly the category formatter is replaced in the actual camera submenu");
+        var originalFormatter = AccessTools.Method(typeof(KSA.Program), "FormatLabelWithCount").CreateDelegate<FormatMenuCount>();
+        var categoryChinese = new Dictionary<string, string>();
+        Span<byte> buffer = stackalloc byte[256];
+        Span<byte> originalBuffer = stackalloc byte[256];
+        foreach (string key in new[] { "Minor Bodies", "Asteroids", "Comets" })
+            foreach (int count in new[] { 0, 2, 123 })
+            {
+                int length = KsaUiLanguages.MenuTextPatch.FormatCameraCategoryWithCount(key, count, buffer);
+                string caption = Encoding.UTF8.GetString(buffer[..length]);
+                Require(buffer[length] == 0, "Category caption keeps its UTF-8 terminator");
+                Require(caption.Split("###")[0] == KsaUiLanguages.Runtime.UiText(key) + (count > 0 ? $" ({count})" : ""),
+                    "Camera category count remains visible before the hidden ID");
+                categoryChinese[key + ":" + count] = caption;
+            }
+        foreach (int count in new[] { 0, 2, 123 })
+        {
+            int length = KsaUiLanguages.MenuTextPatch.FormatCameraCategoryWithCount("Player Category", count, buffer);
+            int baselineLength = originalFormatter("Player Category", count, originalBuffer);
+            Require(length == baselineLength && buffer[..(length + 1)].SequenceEqual(originalBuffer[..(baselineLength + 1)]),
+                "Unknown camera categories retain the exact original formatter output");
+        }
+        KsaUiLanguages.Runtime.ApplyLanguage("en-US");
+        foreach (string key in keys)
+            foreach (uint seed in new uint[] { 0, 0x735A1913 })
+                Require(HashGuiId(KsaUiLanguages.MenuTextPatch.LocalizeStaticLabel(key).ToString(), seed) == HashGuiId(chinese[key], seed),
+                    "Flight-menu IDs remain stable across languages: " + key);
+        foreach (string key in new[] { "Minor Bodies", "Asteroids", "Comets" })
+            foreach (int count in new[] { 0, 2, 123 })
+            {
+                int length = KsaUiLanguages.MenuTextPatch.FormatCameraCategoryWithCount(key, count, buffer);
+                Require(HashGuiId(Encoding.UTF8.GetString(buffer[..length]), 0x735A1913) == HashGuiId(categoryChinese[key + ":" + count], 0x735A1913),
+                    "Camera category IDs retain source names and counts across languages");
+            }
+        KsaUiLanguages.Runtime.ApplyLanguage("zh-CN");
+        results.Add("PASS: Actual flight-menu sites, visible category counts and stable ID hashes");
+    }
+
+    private static void CheckControlCaptions(List<string> results)
+    {
+        var bindings = (System.Collections.IDictionary)typeof(KSA.Input).GetMethod("GenerateDefault")!.Invoke(null, null)!;
+        var originalValues = bindings.Keys.Cast<object>().ToDictionary(k => k, k => bindings[k]);
+        var collection = typeof(KSA.EnumCollections).GetField("InputActions")!.GetValue(null)!;
+        var getName = collection.GetType().GetMethod("GetName", new[] { typeof(KSA.InputAction) })!;
+        var labels = bindings.Keys.Cast<object>().Select(action => (string)getName.Invoke(collection, new[] { action })!).ToArray();
+        Require(labels.Length == 101 && labels.All(KsaUiLanguages.Runtime.CurrentPack.Controls.ContainsKey),
+            "All 101 actual default action display names have controls mappings");
+        Require(KsaUiLanguages.Runtime.ControlText("Camera Mode") == "切换相机模式" && KsaUiLanguages.Runtime.UiText("Camera Mode") == "相机模式",
+            "Control actions and menu names use separate semantic dictionaries");
+        Require(KsaUiLanguages.Runtime.ControlText("Player Action") == "Player Action", "Unknown control names fall back unchanged");
+        var rowMethod = KsaUiLanguages.ControlsKeyCaptionPatch.TargetMethod();
+        var instructions = KsaUiLanguages.ControlsKeyCaptionPatch.Translate(PatchProcessor.GetOriginalInstructions(rowMethod)
+            .Select(i => new CodeInstruction(i))).ToList();
+        Require(instructions.Count(i => i.operand is MethodInfo m && m.DeclaringType == typeof(KsaUiLanguages.Runtime)
+            && m.Name == nameof(KsaUiLanguages.Runtime.ControlText)) == 1,
+            "Exactly the action display-name read is localized in the actual assignment row");
+        Require(instructions.Any(i => i.operand is MethodInfo m && m.Name == "AppendKeyBinding")
+            && instructions.Any(i => i.opcode == System.Reflection.Emit.OpCodes.Ldstr && Equals(i.operand, "SettingsControlsKey")),
+            "Key-value formatting and binding-button IDs remain in the original method");
+        Require(KsaUiLanguages.KeyAssignmentPopupTitlePatch.LocalizeTitle("Roll Left") == "向左滚转", "Binding-popup action title uses its caption dictionary");
+        var popupMethod = KsaUiLanguages.KeyAssignmentPopupTitlePatch.TargetMethod();
+        var popupInstructions = KsaUiLanguages.KeyAssignmentPopupTitlePatch.Translate(PatchProcessor.GetOriginalInstructions(popupMethod)
+            .Select(i => new CodeInstruction(i))).ToList();
+        Require(popupInstructions.Count(i => i.operand is MethodInfo m && m.DeclaringType == typeof(KsaUiLanguages.KeyAssignmentPopupTitlePatch)) == 1,
+            "Binding-popup constructor replaces only the visible uppercase title conversion");
+        Require(bindings.Keys.Cast<object>().All(key => Equals(bindings[key], originalValues[key])),
+            "Binding values and enum keys are unchanged after caption lookups");
+        results.Add("PASS: All actual control captions, separate meanings and original binding paths");
+        KsaUiLanguages.Runtime.ApplyLanguage("en-US");
+        Require(labels.All(label => KsaUiLanguages.Runtime.ControlText(label) == label)
+            && KsaUiLanguages.KeyAssignmentPopupTitlePatch.LocalizeTitle("Roll Left") == "ROLL LEFT",
+            "Control page and newly created binding-popup titles restore original English");
+        KsaUiLanguages.Runtime.ApplyLanguage("zh-CN");
+        results.Add("PASS: Control-caption English fallback and restored Chinese");
+    }
+
+    private static void CheckHudWindowCaptions(List<string> results)
+    {
+        var contextWindowType = typeof(KSA.GaugeContextAssignmentWindow).GetNestedType("Window", BindingFlags.NonPublic)!;
+        var contextWindow = (KSA.ImGuiWindow)RuntimeHelpers.GetUninitializedObject(contextWindowType);
+        var foreignWindowType = typeof(KSA.CrewAssignmentWindow).GetNestedType("Window", BindingFlags.NonPublic)!;
+        var foreignWindow = (KSA.ImGuiWindow)RuntimeHelpers.GetUninitializedObject(foreignWindowType);
+        const string originalTitle = "Context Assignments###context-stable-window";
+        string chineseTitle = KsaUiLanguages.HudWindowTitlePatch.DisplayTitle(originalTitle, contextWindow);
+        Require(chineseTitle == "仪表显示条件###context-stable-window", "HUD window title changes only the visible caption");
+        Require(KsaUiLanguages.HudWindowTitlePatch.DisplayTitle(originalTitle, foreignWindow) == originalTitle,
+            "An unrelated window with a matching title is left unchanged");
+        var titleField = AccessTools.Field(typeof(KSA.ImGuiWindow), "_windowTitle");
+        titleField.SetValue(contextWindow, originalTitle);
+        _ = KsaUiLanguages.HudWindowTitlePatch.DisplayTitle(originalTitle, contextWindow);
+        Require(Equals(titleField.GetValue(contextWindow), originalTitle), "Original window-title storage and hidden ID are not changed");
+        var method = AccessTools.Method(typeof(KSA.ImGuiWindow), nameof(KSA.ImGuiWindow.OnDrawUi));
+        var instructions = KsaUiLanguages.HudWindowTitlePatch.Translate(PatchProcessor.GetOriginalInstructions(method)
+            .Select(i => new CodeInstruction(i))).ToList();
+        Require(instructions.Count(i => i.operand is MethodInfo m && m.DeclaringType == typeof(KsaUiLanguages.HudWindowTitlePatch)) == 1,
+            "Exactly the actual window-title read is wrapped");
+        var chineseView = KsaUiLanguages.HudWindowViewMenuPatch.DisplayCaption("View", contextWindow).ToString();
+        Require(chineseView == "视图###View" && KsaUiLanguages.HudWindowViewMenuPatch.DisplayCaption("View", foreignWindow).ToString() == "View",
+            "Inherited HUD view menus are limited to known window types");
+        ReadOnlySpan<char> layoutTitle = "LAYOUTS";
+        KsaUiLanguages.HudConsoleTitlePatch.Localize("KSA-LAY", ref layoutTitle);
+        Require(layoutTitle.ToString() == "HUD 布局", "Layout chrome uses its scoped caption");
+        Require(KsaUiLanguages.Runtime.HudText("Name") == "名称" && KsaUiLanguages.Runtime.UiText("Name") == "姓名",
+            "Layout labels and crew labels keep their different meanings");
+        results.Add("PASS: Actual HUD window title read, type scope and separate label meanings");
+
+        var popup = (KSA.StringInputPopup)RuntimeHelpers.GetUninitializedObject(typeof(KSA.StringInputPopup));
+        var popupTitle = AccessTools.Field(typeof(KSA.StringInputPopup), "_title");
+        var input = AccessTools.Field(typeof(KSA.StringInputPopup), "_input");
+        var sanitized = AccessTools.Field(typeof(KSA.StringInputPopup), "_sanitized");
+        popupTitle.SetValue(popup, "SAVE LAYOUT");
+        input.SetValue(popup, "My Custom Layout");
+        sanitized.SetValue(popup, "My Custom Layout");
+        KsaUiLanguages.HudSavePopupScopePatch.Enter(popup, out bool previousScope);
+        Require(KsaUiLanguages.HudSavePopupScopePatch.IsLayout
+            && KsaUiLanguages.HudSavePopupCaptionPatch.DisplayTitle("SAVE LAYOUT") == "保存 HUD 布局"
+            && KsaUiLanguages.HudSavePopupCaptionPatch.DisplayPrompt("Please enter a filename to continue.") == "请输入布局名称。",
+            "Layout name-input captions are translated in their scope");
+        KsaUiLanguages.HudSavePopupScopePatch.Leave(previousScope);
+        Require(!KsaUiLanguages.HudSavePopupScopePatch.IsLayout
+            && KsaUiLanguages.HudSavePopupCaptionPatch.DisplayPrompt("Please enter a filename to continue.") == "Please enter a filename to continue.",
+            "HUD save prompts do not affect unrelated name-input dialogs");
+        Require(Equals(popupTitle.GetValue(popup), "SAVE LAYOUT") && Equals(input.GetValue(popup), "My Custom Layout")
+            && Equals(sanitized.GetValue(popup), "My Custom Layout"), "Popup title storage, typed name and sanitized filename are unchanged");
+        Require(KsaUiLanguages.Runtime.HudText("Will be saved as \"").EndsWith("\"", StringComparison.Ordinal),
+            "Sanitized-name hint retains its quote delimiter");
+        results.Add("PASS: Layout save-popup scope and preserved user filename values");
+
+        KsaUiLanguages.Runtime.ApplyLanguage("en-US");
+        string englishTitle = KsaUiLanguages.HudWindowTitlePatch.DisplayTitle(originalTitle, contextWindow);
+        Require(englishTitle == originalTitle && HashGuiId(chineseTitle, 0x735A1913) == HashGuiId(englishTitle, 0x735A1913),
+            "Existing HUD title retains its original explicit ID across languages");
+        Require(HashGuiId(chineseView, 0x735A1913) == HashGuiId(KsaUiLanguages.HudWindowViewMenuPatch.DisplayCaption("View", contextWindow).ToString(), 0x735A1913),
+            "Inherited view-menu IDs remain stable across languages");
+        Require(KsaUiLanguages.HudSavePopupCaptionPatch.DisplayTitle("SAVE LAYOUT") == "SAVE LAYOUT",
+            "An existing layout save popup can render its original English title");
+        KsaUiLanguages.Runtime.ApplyLanguage("zh-CN");
+        results.Add("PASS: Existing HUD window and popup English round trip");
+    }
+
+    private static void CheckHudContextAndLayouts(List<string> results)
+    {
+        var source = System.Xml.Linq.XDocument.Load(Path.Combine(GameDir, "Content", "Core", "Gauges.xml"));
+        var canvases = source.Descendants().Where(e => e.Name.LocalName == "GaugeCanvas" && e.Attribute("Id") is not null)
+            .ToDictionary(e => e.Attribute("Id")!.Value, e => e.Elements().Single(x => x.Name.LocalName == "DisplayName").Value);
+        Require(canvases.Count == 14, "Confirmed default Core canvas set contains 14 IDs");
+        var chineseCanvasNames = canvases.Keys.ToDictionary(k => k, KsaUiLanguages.HudContextAssignmentDisplayPatch.CanvasCaption);
+        Require(chineseCanvasNames.All(p => p.Key != p.Value), "Every actual Core canvas has a Chinese context-table display alias");
+        Require(KsaUiLanguages.HudContextAssignmentDisplayPatch.CanvasCaption("Burn") == "机动编辑器"
+            && KsaUiLanguages.HudContextAssignmentDisplayPatch.CanvasCaption("BurnControl") == "机动控制"
+            && KsaUiLanguages.HudContextAssignmentDisplayPatch.ColumnCaption("Burn").StartsWith("有机动###", StringComparison.Ordinal),
+            "Burn canvas, burn-control canvas and burn visibility condition remain separate meanings");
+        Require(KsaUiLanguages.HudContextAssignmentDisplayPatch.CanvasCaption("Sequence") == "分级序列"
+            && KsaUiLanguages.HudContextAssignmentDisplayPatch.ColumnCaption("Sequence").StartsWith("有分级###", StringComparison.Ordinal),
+            "Sequence canvas and sequence visibility condition use their own captions");
+        Require(KsaUiLanguages.HudContextAssignmentDisplayPatch.CanvasCaption("PlayerCustomCanvas") == "PlayerCustomCanvas",
+            "Unknown canvas IDs are not treated as display aliases");
+        var contextMethod = KsaUiLanguages.HudContextAssignmentDisplayPatch.TargetMethod();
+        var contextOriginal = PatchProcessor.GetOriginalInstructions(contextMethod).Select(i => new CodeInstruction(i)).ToList();
+        var contextPatched = KsaUiLanguages.HudContextAssignmentDisplayPatch.Translate(contextOriginal).ToList();
+        Require(contextPatched.Count(i => i.operand is MethodInfo m && m.DeclaringType == typeof(KsaUiLanguages.HudContextAssignmentDisplayPatch)) == 4,
+            "Exactly two column calls, one canvas display and one instruction are wrapped");
+        Require(contextPatched.Any(i => i.operand is MethodInfo m && m.Name == "SetFlag")
+            && contextPatched.Any(i => i.operand is MethodInfo m && m.DeclaringType == typeof(ImGui) && m.Name == "PushID")
+            && contextPatched.Any(i => i.operand is MethodInfo m && m.DeclaringType == typeof(ImGui) && m.Name == "Checkbox"),
+            "Context checkbox IDs and original settings update call remain unchanged");
+        results.Add("PASS: Actual Core canvas aliases, context meanings and unchanged settings calls");
+
+        string[] defaults = { "Default", "Default (default)" };
+        var chineseDefaults = defaults.ToDictionary(s => s, KsaUiLanguages.HudLayoutPatches.BuiltinDefaultLabel);
+        Require(chineseDefaults["Default (default)"].StartsWith("默认 （默认）###", StringComparison.Ordinal),
+            "Builtin default layout and fixed marker render in Chinese");
+        string[] customLabels = { "Default (default)", "Resources* (default) [Ctrl+1]", "My (default) name (default) [F9]" };
+        var chineseCustom = customLabels.ToDictionary(s => s, s => KsaUiLanguages.HudLayoutPatches.CustomLayoutMenuLabel(s, true));
+        Require(chineseCustom[customLabels[0]].StartsWith("Default （默认）###", StringComparison.Ordinal),
+            "A custom layout named Default is not renamed as the builtin label");
+        Require(chineseCustom[customLabels[1]].StartsWith("Resources* （默认） [Ctrl+1]###", StringComparison.Ordinal)
+            && chineseCustom[customLabels[2]].StartsWith("My (default) name （默认） [F9]###", StringComparison.Ordinal),
+            "Custom names, embedded default text, dirty marker and hotkeys are preserved");
+        foreach (string label in customLabels)
+            Require(KsaUiLanguages.HudLayoutPatches.CustomLayoutMenuLabel(label, false) == label,
+                "Nondefault user layouts are unchanged regardless of their names");
+        Require(KsaUiLanguages.HudLayoutPatches.DefaultLayoutRowLabel("Resources (default)", true)
+            .StartsWith("Resources （默认）###", StringComparison.Ordinal)
+            && KsaUiLanguages.HudLayoutPatches.DefaultLayoutRowLabel("Resources", false) == "Resources",
+            "Layout table rows localize only the fixed marker");
+        Require(KsaUiLanguages.HudLayoutPatches.LayoutFooterUnit(" LAYOUT").ToString() == " 个布局"
+            && KsaUiLanguages.HudLayoutPatches.LayoutFooterUnit(" LAYOUTS").ToString() == " 个布局",
+            "Layout count fragments preserve their leading spacing and avoid the window-title meaning");
+        var menuMethod = AccessTools.Method(typeof(KSA.LayoutSaves), nameof(KSA.LayoutSaves.DrawMenu));
+        var layoutMenu = KsaUiLanguages.HudLayoutPatches.Translate(PatchProcessor.GetOriginalInstructions(menuMethod)
+            .Select(i => new CodeInstruction(i)), menuMethod).ToList();
+        Require(layoutMenu.Count(i => i.operand is MethodInfo m && m.Name == nameof(KsaUiLanguages.HudLayoutPatches.BuiltinDefaultMenuItem)) == 1
+            && layoutMenu.Count(i => i.operand is MethodInfo m && m.Name == nameof(KsaUiLanguages.HudLayoutPatches.CustomLayoutMenuItem)) == 1,
+            "Actual layout menu distinguishes the builtin item from the loop's custom items");
+        var rowMethod = AccessTools.Method(typeof(KSA.LayoutSave), nameof(KSA.LayoutSave.DrawInTable));
+        var layoutRow = KsaUiLanguages.HudLayoutPatches.Translate(PatchProcessor.GetOriginalInstructions(rowMethod)
+            .Select(i => new CodeInstruction(i)), rowMethod).ToList();
+        Require(layoutRow.Count(i => i.operand is MethodInfo m && m.Name == nameof(KsaUiLanguages.HudLayoutPatches.DefaultLayoutRow)) == 1,
+            "Exactly the actual user layout-row selectable is wrapped");
+        var bufferMethod = KsaUiLanguages.HudLayoutMenuBufferPatch.TargetMethod();
+        var bufferInstructions = KsaUiLanguages.HudLayoutMenuBufferPatch.Translate(PatchProcessor.GetOriginalInstructions(bufferMethod)
+            .Select(i => new CodeInstruction(i))).ToList();
+        Require(bufferInstructions.Count(i => i.operand is MethodInfo m && m.DeclaringType == typeof(KsaUiLanguages.HudLayoutMenuBufferPatch)) == 2,
+            "Both the actual menu byte allocation and matching char span capacity are scoped together");
+        string longOriginal = new string('A', 100) + " (default)";
+        string longChinese = KsaUiLanguages.HudLayoutPatches.CustomLayoutMenuLabel(longOriginal, true);
+        int previousCapacity = KsaUiLanguages.HudLayoutMenuBufferPatch.RequiredCharacters;
+        KsaUiLanguages.HudLayoutMenuBufferPatch.RequiredCharacters = longChinese.Length + 3;
+        Require(KsaUiLanguages.HudLayoutMenuBufferPatch.BufferCharacters() >= longChinese.Length + 3
+            && KsaUiLanguages.HudLayoutMenuBufferPatch.BufferBytes() == KsaUiLanguages.HudLayoutMenuBufferPatch.BufferCharacters() * sizeof(char),
+            "Long layout names and hidden IDs fit a correctly sized byte and character buffer");
+        KsaUiLanguages.HudLayoutMenuBufferPatch.RequiredCharacters = previousCapacity;
+        Require(KsaUiLanguages.HudLayoutMenuBufferPatch.BufferCharacters() == 128 && KsaUiLanguages.HudLayoutMenuBufferPatch.BufferBytes() == 256,
+            "Unrelated menu calls retain their original buffer capacity");
+        results.Add("PASS: Layout menu and table preserve custom names, markers and hotkeys");
+
+        const string layoutName = "Resources's {0} layout";
+        string overwriteMessage = "Are you sure you want to overwrite layout '" + layoutName + "'?";
+        string deleteMessage = "Are you sure you want to delete layout '" + layoutName + "'?";
+        Require(KsaUiLanguages.HudConfirmPopupCaptionPatch.DisplayMessage(overwriteMessage, "OVERWRITE LAYOUT")
+            == "确定要覆盖布局“" + layoutName + "”吗？"
+            && KsaUiLanguages.HudConfirmPopupCaptionPatch.DisplayMessage(deleteMessage, "DELETE LAYOUT")
+            == "确定要删除布局“" + layoutName + "”吗？",
+            "Confirmation templates preserve embedded quotes and placeholder-like player names");
+        Require(KsaUiLanguages.HudConfirmPopupCaptionPatch.DisplayMessage(deleteMessage, "FOREIGN POPUP") == deleteMessage,
+            "Other confirmation dialogs retain their messages");
+        var eva = source.Descendants().Single(e => e.Name.LocalName == "GaugeCanvas" && e.Attribute("Id")?.Value == "KittenFlightControl");
+        var actualEvaTooltips = eva.Descendants().Where(e => e.Name.LocalName == "Tooltip").Select(e => e.Attribute("Value")!.Value).ToList();
+        Require(actualEvaTooltips.Count == 5 && actualEvaTooltips.All(s => KsaUiLanguages.Runtime.TooltipText(s) != s),
+            "All five actual EVA control tooltips have translated mappings");
+        var languageMenu = PatchProcessor.GetOriginalInstructions(AccessTools.Method(typeof(KsaUiLanguages.LanguageMenuPatch), nameof(KsaUiLanguages.LanguageMenuPatch.Draw)));
+        Require(languageMenu.Any(i => i.opcode == System.Reflection.Emit.OpCodes.Ldstr && Equals(i.operand, "Language"))
+            && !languageMenu.Any(i => i.opcode == System.Reflection.Emit.OpCodes.Ldstr && Equals(i.operand, "Language / 语言")),
+            "Language selector title follows the requested single English label");
+        results.Add("PASS: Preserved layout confirmation names, actual EVA tooltips and Language title");
+
+        var conditionNames = Enum.GetNames(typeof(KSA.GaugeVisibilityFlag));
+        var chineseColumns = conditionNames.ToDictionary(s => s, KsaUiLanguages.HudContextAssignmentDisplayPatch.ColumnCaption);
+        KsaUiLanguages.Runtime.ApplyLanguage("en-US");
+        foreach (string canvasId in canvases.Keys)
+            Require(KsaUiLanguages.HudContextAssignmentDisplayPatch.CanvasCaption(canvasId) == canvasId,
+                "English context table restores the raw canvas ID");
+        foreach (string condition in conditionNames)
+            Require(HashGuiId(KsaUiLanguages.HudContextAssignmentDisplayPatch.ColumnCaption(condition), 0x735A1913)
+                == HashGuiId(chineseColumns[condition], 0x735A1913), "Context column IDs remain stable across languages");
+        foreach (string label in defaults)
+            Require(HashGuiId(KsaUiLanguages.HudLayoutPatches.BuiltinDefaultLabel(label), 0x735A1913) == HashGuiId(chineseDefaults[label], 0x735A1913),
+                "Builtin layout menu IDs remain stable across languages");
+        foreach (string label in customLabels)
+            Require(HashGuiId(KsaUiLanguages.HudLayoutPatches.CustomLayoutMenuLabel(label, true), 0x735A1913) == HashGuiId(chineseCustom[label], 0x735A1913),
+                "Custom layout menu IDs remain stable across languages");
+        Require(KsaUiLanguages.HudConfirmPopupCaptionPatch.DisplayMessage(overwriteMessage, "OVERWRITE LAYOUT") == overwriteMessage,
+            "Existing layout confirmation restores its original English message");
+        KsaUiLanguages.Runtime.ApplyLanguage("zh-CN");
+        results.Add("PASS: HUD canvas, context-column and layout English fallback with stable IDs");
     }
 
     private static void Require(bool condition, string message)

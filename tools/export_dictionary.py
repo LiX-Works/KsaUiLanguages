@@ -25,7 +25,7 @@ NAMING_NOTES_FILE = ROOT / "reference" / "part-name-evidence-5541.json"
 
 PLACEHOLDER_RE = re.compile(r"\{[^{}]+\}")
 VERSION_RE = re.compile(r"<Version>\s*([^<]+?)\s*</Version>")
-SECTION_ORDER = ("native", "literals", "ui", "tooltips", "editor", "startup", "parts")
+SECTION_ORDER = ("native", "literals", "ui", "tooltips", "editor", "startup", "parts", "controls", "hud")
 COVERAGE = {
     "native": "resource mapped, per-entry visual not verified",
     "ui": "limited hooks, per-entry not verified",
@@ -34,6 +34,8 @@ COVERAGE = {
     "editor": "mixed: some integrated / some candidates; per-entry review needed",
     "startup": "startup screen visually checked generally; per-entry options not all operated",
     "parts": "display-only mappings; fallback original preserved; visual check pending",
+    "controls": "settings action captions and binding-popup text; binding values untouched; per-entry visual not all verified",
+    "hud": "HUD layout and context-window captions; layout names, canvas IDs and visibility settings untouched; per-entry visual not all verified",
 }
 PRESERVE_TERMS = (
     "RCS", "Δv", "TWR", "Isp", "EVA", "HUD", "IVA", "SOI",
@@ -180,6 +182,8 @@ def context_for(section: str, native_item=None) -> str:
     return {
         "literals": "Fixed UI literal or button caption; hook coverage is limited.",
         "ui": "Menu, window, or HUD label keyed by its English display text.",
+        "controls": "Controls settings action name or key-assignment popup caption; actual bindings and config keys unchanged.",
+        "hud": "HUD layouts or gauge visibility conditions; names, storage IDs and context values remain original.",
         "tooltips": "Tooltip text keyed by its English source string.",
         "editor": "Vehicle editor or part-editor label/literal; some entries may be fragments.",
         "startup": "Startup/setup screen label or option; options were not all operated individually.",

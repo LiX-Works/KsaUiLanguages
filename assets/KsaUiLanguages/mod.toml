@@ -1,5 +1,6 @@
-name = "KSA UI Languages Prototype"
-description = "Independent UI language prototype for KSA build 5541"
+name = "KSA UI Languages"
+version = "0.4.0"
+description = "Partial Chinese UI with English fallback for KSA build 5541"
 assets = []
 
 [StarMap]

@@ -25,6 +25,8 @@ public sealed class LanguagePack
     public Dictionary<string, string> Editor { get; set; } = new();
     public Dictionary<string, string> Startup { get; set; } = new();
     public Dictionary<string, string> Parts { get; set; } = new();
+    public Dictionary<string, string> Controls { get; set; } = new();
+    public Dictionary<string, string> Hud { get; set; } = new();
 }
 
 [StarMapMod]
@@ -127,6 +129,9 @@ public static class Runtime
         foreach (var entry in pack.Editor)
             if (!Tokens(entry.Key).SequenceEqual(Tokens(entry.Value)))
                 throw new InvalidDataException($"Editor placeholder mismatch: {entry.Key}");
+        foreach (var entry in pack.Hud)
+            if (!Tokens(entry.Key).SequenceEqual(Tokens(entry.Value)))
+                throw new InvalidDataException($"HUD placeholder mismatch: {entry.Key}");
         CurrentPack = pack;
         SelectedLocale = locale;
         Translations.Clear();
@@ -138,7 +143,7 @@ public static class Runtime
             _originalNavLabels ??= (string[])labels.Clone();
             for (int i = 0; i < labels.Length; i++) labels[i] = Literal(_originalNavLabels[i]);
         }
-        Log($"Language {locale}: {Translations.Count} native, {pack.Literals.Count} literals, {pack.Ui.Count} UI labels, {pack.Tooltips.Count} tooltips, {pack.Editor.Count} editor labels, {pack.Startup.Count} startup labels, {pack.Parts.Count} part names.");
+        Log($"Language {locale}: {Translations.Count} native, {pack.Literals.Count} literals, {pack.Ui.Count} UI labels, {pack.Tooltips.Count} tooltips, {pack.Editor.Count} editor labels, {pack.Startup.Count} startup labels, {pack.Parts.Count} part names, {pack.Controls.Count} control captions, {pack.Hud.Count} HUD captions.");
     }
 
     private static IEnumerable<string> Tokens(string text) => Regex.Matches(text, @"\{[^{}]+\}")
@@ -163,6 +168,19 @@ public static class Runtime
     public static string EditorText(string original) => CurrentPack.Editor.GetValueOrDefault(original, original);
 
     public static string StartupText(string original) => CurrentPack.Startup.GetValueOrDefault(original, original);
+
+    public static string ControlText(string original) => CurrentPack.Controls.GetValueOrDefault(original, original);
+
+    public static string HudText(string original) => CurrentPack.Hud.GetValueOrDefault(original, UiText(original));
+
+    public static string HudMenuText(string original)
+    {
+        int separator = original.IndexOf("##", StringComparison.Ordinal);
+        string visible = separator < 0 ? original : original[..separator];
+        if (!Packs.Values.Any(pack => pack.Hud.ContainsKey(visible) || pack.Ui.ContainsKey(visible))) return original;
+        int stable = original.IndexOf("###", StringComparison.Ordinal);
+        return HudText(visible) + (stable >= 0 ? original[stable..] : "###" + original);
+    }
 
     public static string PartName(PartTemplate template)
         => CurrentPack.Parts.GetValueOrDefault(template.Id, template.DisplayName ?? template.Id);
@@ -338,7 +356,25 @@ public static class MenuTextPatch
         "Speed", "Camera", "Camera Mode", "Fixed", "Free", "Orbit", "Map", "Target", "Orbit Lines",
         "Show All Orbits", "Hide All Orbits", "Show Celestial Names", "Show Location Names", "Show Map Grid",
         "Frame Statistics", "Context Assignments", "Resource Groups", "Resources", "Draw Part Axes", "Show Delta-V Debug",
-        "Vehicle", "Follow", "Control", "Set Target", "Clear Target", "Move Camera To", "Celestial Info"
+        "Vehicle", "Follow", "Control", "Set Target", "Clear Target", "Move Camera To", "Celestial Info",
+        "HUD", "Auto Warp", "Vessels", "Bodies", "Manifest", "Kitten Roster", "Next", "Previous",
+        "Transfer Planner", "Flight Plan", "Ground Track", "Target Track", "Staging", "Threads", "Profiler",
+        "Orbit Camera", "Free Camera", "Map Camera", "Add Camera", "Follow Terrain", "Show Orbit Markers",
+        "Flight Plans", "Celestial Names", "Debug", "Show All", "Show None", "Comets", "Planets", "Moons",
+        "Kitten Tuning", "Parachute Tuning", "Statistics", "Spherical Billboarding", "Wireframe", "Show Flare Debug",
+        "Show Overall Bloom Debug", "Show Terrain Debug", "Show Texture Streaming", "Show Orbit Directions",
+        "Show Burn Debug", "Show Part Contact Load", "Mesh Deformation Editor", "Show Exhaust Debug",
+        "Show Plume Debug", "Show Engine Designer", "Show Atmosphere Editor", "Show Clouds Editor", "Show Ocean Editor",
+        "Show Particle Emitter Editor", "Show Explosion Editor", "Show Distant Glint Editor",
+        "Show Device Host Shared Memory", "Lighting", "Show Light Debug", "Show Planet Shadow Debug",
+        "Show Cascaded Shadow Debug", "Gauge UI", "Debug Mode", "Inspector", "Hierarchy", "Reset",
+        "Show Physics Debug", "Show Engine Debug", "Show Flight Computer Debug", "Show Set Orbit Debug",
+        "Show Audio Debug", "Sprite Distance", "Editor Toggle", "Show PBR Spheres", "Show experimental particles",
+        "Minor Bodies", "Asteroids"
+    };
+    private static readonly HashSet<string> CameraCategoryTitles = new(StringComparer.Ordinal)
+    {
+        "Minor Bodies", "Asteroids", "Comets"
     };
     private static readonly HashSet<string> HudTitles = new(StringComparer.Ordinal)
     {
@@ -349,6 +385,8 @@ public static class MenuTextPatch
     public static IEnumerable<MethodBase> TargetMethods()
     {
         yield return AccessTools.Method(typeof(KSA.Program), "DrawMenuBar");
+        yield return AccessTools.Method(typeof(ProfilerUi), nameof(ProfilerUi.DrawMenuItems));
+        yield return AccessTools.Method(typeof(KSA.Program), "DrawMoveCameraToSubMenu");
         yield return AccessTools.Method(typeof(GaugeCanvas), nameof(GaugeCanvas.OnDrawMenuBar));
     }
 
@@ -361,6 +399,7 @@ public static class MenuTextPatch
 
     public static ImString LocalizeStaticLabel(ImString label)
     {
+        if (label.ToString() == "Hold alt to multiselect") return Runtime.ImText(Runtime.UiText(label.ToString()));
         if (StaticLabels.Contains(label.ToString())) LocalizeMenuLabel(ref label);
         return label;
     }
@@ -374,14 +413,60 @@ public static class MenuTextPatch
         return label;
     }
 
+    public static int FormatCameraCategoryWithCount(ReadOnlySpan<char> label, int count, Span<byte> buffer)
+    {
+        string original = label.ToString();
+        if (!CameraCategoryTitles.Contains(original)) return FormatLabelWithCount(label, count, buffer);
+
+        string menuText = Runtime.MenuText(original);
+        int separator = menuText.IndexOf("###", StringComparison.Ordinal);
+        if (separator < 0) return FormatLabelWithCount(label, count, buffer);
+
+        string countText = count > 0 ? $" ({count})" : string.Empty;
+        string visible = menuText[..separator] + countText;
+        string stableId = menuText[(separator + 3)..] + countText;
+        int length = Encoding.UTF8.GetBytes(visible + "###" + stableId, buffer);
+        buffer[length] = 0;
+        return length;
+    }
+
+    private static int FormatLabelWithCount(ReadOnlySpan<char> label, int count, Span<byte> buffer)
+    {
+        int length = Encoding.UTF8.GetBytes(label, buffer);
+        if (count > 0)
+        {
+            buffer[length++] = (byte)' ';
+            buffer[length++] = (byte)'(';
+            count.TryFormat(buffer[length..], out int bytesWritten);
+            length += bytesWritten;
+            buffer[length++] = (byte)')';
+        }
+        buffer[length] = 0;
+        return length;
+    }
+
     [HarmonyTranspiler]
     public static IEnumerable<CodeInstruction> TranslateStaticMenus(IEnumerable<CodeInstruction> instructions, MethodBase __originalMethod)
     {
         bool hud = __originalMethod.DeclaringType == typeof(GaugeCanvas);
         var inputType = hud ? typeof(string) : typeof(ReadOnlySpan<byte>);
         var lookup = AccessTools.Method(typeof(MenuTextPatch), hud ? nameof(LocalizeHudTitle) : nameof(LocalizeStaticLabel));
+        bool cameraCategories = __originalMethod.DeclaringType == typeof(KSA.Program)
+            && __originalMethod.Name == "DrawMoveCameraToSubMenu";
+        var formatCameraCategory = AccessTools.Method(typeof(MenuTextPatch), nameof(FormatCameraCategoryWithCount));
         foreach (var instruction in instructions)
         {
+            if (cameraCategories && instruction.operand is MethodInfo formatMethod
+                && formatMethod.DeclaringType == typeof(KSA.Program)
+                && formatMethod.Name == "FormatLabelWithCount"
+                && formatMethod.GetParameters().Length == 3
+                && formatMethod.GetParameters()[0].ParameterType == typeof(ReadOnlySpan<char>)
+                && formatMethod.GetParameters()[1].ParameterType == typeof(int)
+                && formatMethod.GetParameters()[2].ParameterType == typeof(Span<byte>))
+            {
+                instruction.opcode = OpCodes.Call;
+                instruction.operand = formatCameraCategory;
+            }
             yield return instruction;
             if (instruction.opcode == OpCodes.Call && instruction.operand is MethodInfo method
                 && method.DeclaringType == typeof(ImString) && method.Name == "op_Implicit"
@@ -496,7 +581,7 @@ public static class LanguageMenuPatch
     [HarmonyPostfix]
     public static void Draw()
     {
-        if (!ImGui.BeginMenu("Language / 语言")) return;
+        if (!ImGui.BeginMenu("Language")) return;
         foreach (var pack in Runtime.Packs.Values)
         {
             if (ImGui.MenuItem(pack.DisplayName, default(ImString), Runtime.SelectedLocale == pack.Locale))

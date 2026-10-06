@@ -6,5 +6,7 @@
   "literals": {},
   "editor": {},
   "startup": {},
-  "parts": {}
+  "parts": {},
+  "controls": {},
+  "hud": {}
 }

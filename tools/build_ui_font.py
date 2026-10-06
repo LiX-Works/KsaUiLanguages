@@ -8,11 +8,11 @@ from fontTools.ttLib import TTFont
 from fontTools.varLib.instancer import instantiateVariableFont
 from fontTools import subset
 
-texts = ['Language / 语言', 'English', '简体中文']
+texts = ['Language', 'English', '简体中文']
 for path in (project / 'assets' / 'KsaUiLanguages' / 'Locales').glob('*.json'):
     pack = json.loads(path.read_text(encoding='utf-8'))
     texts.append(pack['displayName'])
-    for section in ('native', 'literals', 'ui', 'tooltips', 'editor', 'startup', 'parts'):
+    for section in ('native', 'literals', 'ui', 'tooltips', 'editor', 'startup', 'parts', 'controls', 'hud'):
         texts.extend(pack.get(section, {}).keys())
         texts.extend(pack.get(section, {}).values())
 font = TTFont(project / 'assets' / 'NotoSansSC-variable.ttf')
