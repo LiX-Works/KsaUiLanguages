@@ -12,7 +12,7 @@ texts = ['Language', 'English', '简体中文']
 for path in (project / 'assets' / 'KsaUiLanguages' / 'Locales').glob('*.json'):
     pack = json.loads(path.read_text(encoding='utf-8'))
     texts.append(pack['displayName'])
-    for section in ('native', 'literals', 'ui', 'tooltips', 'editor', 'startup', 'parts', 'controls', 'hud'):
+    for section in ('native', 'literals', 'ui', 'tooltips', 'editor', 'startup', 'parts', 'controls', 'hud', 'planning', 'utility'):
         texts.extend(pack.get(section, {}).keys())
         texts.extend(pack.get(section, {}).values())
 font = TTFont(project / 'assets' / 'NotoSansSC-variable.ttf')

@@ -196,6 +196,10 @@ internal static class Program
         CheckControlCaptions(results);
         CheckHudWindowCaptions(results);
         CheckHudContextAndLayouts(results);
+        CheckPlanningAndTracking(results);
+        CheckFlightAndPartContexts(results);
+        CheckResourceAndTimeCaptions(results);
+        CheckSaveAndManifestCaptions(results);
         KsaUiLanguages.Runtime.ApplyLanguage("en-US");
         Require(KsaUiLanguages.Runtime.PartName(capsuleTemplate) == capsuleId, "English restores the original part name");
         results.Add("PASS: Part-name English fallback");
@@ -234,11 +238,22 @@ internal static class Program
             "Removing the provider restores English");
         results.Add("PASS: Provider removal restores English");
         var patchSmoke = new Harmony("org.ksa.uilanguages.patchsmoke");
+        string[] patchedDisplayMethods=Array.Empty<string>();
         try
         {
             KsaUiLanguages.Runtime.ApplyLanguage("zh-CN");
             patchSmoke.PatchAll(typeof(KsaUiLanguages.LanguagePlugin).Assembly);
+            var sharedCheckbox=KsaUiLanguages.PartContextFieldCaptionPatch.TargetMethods().Single(m=>!m.IsGenericMethod);
+            var finalCheckbox=PatchProcessor.GetCurrentInstructions(sharedCheckbox);
+            Require(finalCheckbox.Count(i=>i.operand is MethodInfo m && m.DeclaringType==typeof(KsaUiLanguages.PartContextFieldCaptionPatch)
+                && m.Name==nameof(KsaUiLanguages.PartContextFieldCaptionPatch.NativeText))==1, "Final shared-checkbox IL has exactly one composed display wrapper");
+            KsaUiLanguages.FlightPlanUiScopePatch.Enter(out int checkboxScope);
+            try { Require(KsaUiLanguages.PartContextFieldCaptionPatch.CombinedCaption("Hide Orbit").ToString()=="隐藏轨道", "Final composed checkbox lookup includes flight-plan scope"); }
+            finally { KsaUiLanguages.FlightPlanUiScopePatch.Leave(null,checkboxScope); }
+            results.Add("PASS: Final shared-checkbox patch contains the composed flight and resource display lookup");
             Require(Harmony.GetAllPatchedMethods().Any(m => Harmony.GetPatchInfo(m)?.Owners.Contains(patchSmoke.Id) == true), "Plugin Harmony patches can be installed against the actual game");
+            patchedDisplayMethods=Harmony.GetAllPatchedMethods().Where(m=>Harmony.GetPatchInfo(m)?.Owners.Contains(patchSmoke.Id)==true)
+                .Select(m=>m.DeclaringType?.FullName+"::"+m.Name+"("+string.Join(",",m.GetParameters().Select(p=>p.ParameterType.ToString()))+")").Order().ToArray();
             results.Add("PASS: All plugin patches install against game build 5541");
         }
         finally
@@ -248,7 +263,7 @@ internal static class Program
         }
         harmony.UnpatchAll("org.ksa.uilanguages.headlesschecks");
         var report = new { gameVersion = typeof(KSA.Constants).Assembly.GetName().Version?.ToString(),
-            results, scope = "Actual game localization objects; no GUI or button-operation validation" };
+            results, patchedDisplayMethods, scope = "Actual game localization objects; no GUI or button-operation validation" };
         File.WriteAllText(Path.Combine(Root, @"work\run-logs\language-checks.json"),
             JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true }));
         Console.WriteLine(JsonSerializer.Serialize(report));
@@ -467,7 +482,7 @@ internal static class Program
         popupTitle.SetValue(popup, "SAVE LAYOUT");
         input.SetValue(popup, "My Custom Layout");
         sanitized.SetValue(popup, "My Custom Layout");
-        KsaUiLanguages.HudSavePopupScopePatch.Enter(popup, out bool previousScope);
+        KsaUiLanguages.HudSavePopupScopePatch.Enter(popup, out var previousScope);
         Require(KsaUiLanguages.HudSavePopupScopePatch.IsLayout
             && KsaUiLanguages.HudSavePopupCaptionPatch.DisplayTitle("SAVE LAYOUT") == "保存 HUD 布局"
             && KsaUiLanguages.HudSavePopupCaptionPatch.DisplayPrompt("Please enter a filename to continue.") == "请输入布局名称。",
@@ -610,6 +625,233 @@ internal static class Program
             "Existing layout confirmation restores its original English message");
         KsaUiLanguages.Runtime.ApplyLanguage("zh-CN");
         results.Add("PASS: HUD canvas, context-column and layout English fallback with stable IDs");
+    }
+
+    private static void CheckPlanningAndTracking(List<string> results)
+    {
+        var transferKeys = typeof(KSA.TransferPlanner).GetField("TransferTypes")!.GetValue(null) as System.Collections.IEnumerable;
+        var typeRecords=transferKeys!.Cast<object>().Select(o=>new{instance=o,key=(string)o.GetType().GetMethod("GetKey")!.Invoke(o,null)!,name=(string)o.GetType().GetMethod("GetName")!.Invoke(o,null)!}).ToList();
+        Require(typeRecords.Count==4 && typeRecords.All(t=>KsaUiLanguages.Runtime.CurrentPack.Planning.ContainsKey(t.name)), "All four actual transfer types have display translations");
+        var chinesePlanOptions=typeRecords.ToDictionary(t=>t.name,t=>KsaUiLanguages.TransferPlannerComboPatch.OptionText(t.name,false));
+        foreach(var item in typeRecords)
+        {
+            Require(!KsaUiLanguages.TransferPlannerComboPatch.PreviewText(item.name,false).Contains("###"), "Transfer preview is plain display text");
+            Require((string)item.instance.GetType().GetMethod("GetKey")!.Invoke(item.instance,null)! == item.key
+                && (string)item.instance.GetType().GetMethod("GetName")!.Invoke(item.instance,null)! == item.name, "Transfer objects retain their actual key and native name");
+        }
+        Require(KsaUiLanguages.TransferPlannerComboPatch.OptionText("Player Plan",false)=="Player Plan", "Unrecognized transfer option names are retained");
+        foreach(var method in KsaUiLanguages.TransferPlannerCaptionPatch.TargetMethods())
+        {
+            var original=PatchProcessor.GetOriginalInstructions(method).Select(i=>new CodeInstruction(i)).ToList();
+            var patched=KsaUiLanguages.TransferPlannerCaptionPatch.Translate(original,method).ToList();
+            Require(patched.Any(i=>i.operand is MethodInfo m && m.DeclaringType==typeof(KsaUiLanguages.TransferPlannerCaptionPatch)), "Actual transfer renderer has translated call sites: "+method.Name);
+            Require(patched.Where(i=>i.opcode==System.Reflection.Emit.OpCodes.Ldstr).Select(i=>i.operand)
+                .SequenceEqual(original.Where(i=>i.opcode==System.Reflection.Emit.OpCodes.Ldstr).Select(i=>i.operand)), "Transfer rendering retains original string literals for lookup and ID construction");
+        }
+        foreach(var method in KsaUiLanguages.TransferPlannerComboPatch.TargetMethods())
+        {
+            var patched=KsaUiLanguages.TransferPlannerComboPatch.Translate(PatchProcessor.GetOriginalInstructions(method).Select(i=>new CodeInstruction(i)),method).ToList();
+            Require(patched.Count(i=>i.operand is MethodInfo m && m.DeclaringType==typeof(KsaUiLanguages.TransferPlannerComboPatch))==2, "Closed value-type transfer combo contains exactly preview and option wrappers");
+        }
+        results.Add("PASS: Actual transfer types, display-only keys and rendering call sites");
+
+        Require(KsaUiLanguages.TrackingWindowTitlePatch.DisplayTitle("My Ground Track | Ground Track","KSA-GND")=="My Ground Track | 地面轨迹", "Tracking title translates only the appended suffix");
+        Require(KsaUiLanguages.TrackingWindowTitlePatch.DisplayTitle("My Ground Track | Ground Track","OtherWindow")=="My Ground Track | Ground Track", "Unrelated window titles are not changed");
+        Require(KsaUiLanguages.TrackingCaptionPatch.StaticText("Reset##AltReset").ToString()=="重置###Reset##AltReset", "Tracking reset button retains the complete original ID");
+        Require(KsaUiLanguages.TrackingCaptionPatch.StaticText("##GizmoXAlt").ToString()=="##GizmoXAlt", "Tracking gizmo input IDs are untouched");
+        Require(KsaUiLanguages.TrackingCaptionPatch.PlainText("Scale: ")=="刻度间隔: " && KsaUiLanguages.TrackingCaptionPatch.PlainText("/s")=="/s", "Tracking display fragments and numeric units remain distinct");
+        foreach(var method in KsaUiLanguages.TrackingCaptionPatch.TargetMethods())
+        {
+            var patched=KsaUiLanguages.TrackingCaptionPatch.Translate(PatchProcessor.GetOriginalInstructions(method).Select(i=>new CodeInstruction(i)),method).ToList();
+            Require(patched.Any(i=>i.operand is MethodInfo m && m.DeclaringType==typeof(KsaUiLanguages.TrackingCaptionPatch)), "Actual tracking render method contains its scoped display lookup");
+        }
+        results.Add("PASS: Tracking titles, gizmo IDs and relative-axis meanings");
+
+        string modMessage="A new mod with id 'Hohmann's {0}' has been found, do you want it enabled?";
+        Require(KsaUiLanguages.CommonPopupCaptionPatch.ModMessage(modMessage)=="发现新模组“Hohmann's {0}”，要启用吗？", "Mod confirmation keeps the entire original mod ID");
+        Require(KsaUiLanguages.CommonPopupCaptionPatch.ModMessage("Player note") == "Player note", "Unrecognized popup messages are retained");
+        foreach(var method in KsaUiLanguages.CommonPopupCaptionPatch.TargetMethods())
+        {
+            var original=PatchProcessor.GetOriginalInstructions(method).Select(i=>new CodeInstruction(i)).ToList();
+            var patched=KsaUiLanguages.CommonPopupCaptionPatch.Translate(original,method).ToList();
+            Require(patched.Any(i=>i.operand is MethodInfo m && m.DeclaringType==typeof(KsaUiLanguages.CommonPopupCaptionPatch)), "Common popup includes actual display wrapper: "+method.DeclaringType!.Name);
+            Require(patched.Count(i=>i.operand is MethodInfo m && m.Name=="DrawConsoleButtonRow") == original.Count(i=>i.operand is MethodInfo m && m.Name=="DrawConsoleButtonRow"), "Popup button/action path remains present");
+        }
+        results.Add("PASS: Common popup captions, dynamic mod IDs and original action calls");
+
+        KsaUiLanguages.Runtime.ApplyLanguage("en-US");
+        foreach(var item in typeRecords)
+            Require(HashGuiId(KsaUiLanguages.TransferPlannerComboPatch.OptionText(item.name,false),0x735A1913)==HashGuiId(chinesePlanOptions[item.name],0x735A1913), "Transfer option IDs stay stable in English");
+        Require(KsaUiLanguages.TrackingWindowTitlePatch.DisplayTitle("My Ground Track | Ground Track","KSA-GND")=="My Ground Track | Ground Track"
+            && KsaUiLanguages.CommonPopupCaptionPatch.ModMessage(modMessage)==modMessage, "Tracking and common popups restore original English");
+        KsaUiLanguages.Runtime.ApplyLanguage("zh-CN");
+        results.Add("PASS: Planning and tracking English fallback and stable option hashes");
+    }
+
+    private static void CheckFlightAndPartContexts(List<string> results)
+    {
+        string[] burnMenus={"Create Burn [Manual]","Add 2nd Burn [Manual]","Create Burn [Prograde]"};
+        var chineseMenus=burnMenus.ToDictionary(s=>s,KsaUiLanguages.FlightPlanCallsitePatch.PlanningBurnActionMenuText);
+        Require(chineseMenus[burnMenus[1]].StartsWith("添加第 2 次机动 [手动]###",StringComparison.Ordinal), "Ordinal burn display uses its number without the English suffix");
+        const string departure="Create Burn [Hohmann Departure]";
+        string chineseDeparture=KsaUiLanguages.FlightPlanCallsitePatch.PlanningParentDepartureMenuText(departure);
+        Require(chineseDeparture.Contains("Hohmann")&&!chineseDeparture.Contains("霍曼"), "Departure menu preserves its dynamic celestial name");
+        string[] headers={"Patch '0'###FlightPlanPatch0","Closest Approach to Hohmann###Encounter-Hohmann"};
+        var chineseHeaders=headers.ToDictionary(s=>s,KsaUiLanguages.FlightPlanCallsitePatch.PlanningCollapsingHeaderText);
+        Require(chineseHeaders[headers[0]].StartsWith("轨迹段 '0'###",StringComparison.Ordinal), "Patch headers translate only the fixed prefix and keep their ID");
+        var fieldLookup=AccessTools.Method(typeof(KsaUiLanguages.FlightPlanCallsitePatch),"PlanningFieldText");
+        Require((string)fieldLookup.Invoke(null,new object[]{"Period"})! == "轨道周期"
+            && KsaUiLanguages.Runtime.PlanningText("Period")=="显示周期数", "Orbit-period field uses a different semantic key from plot display periods");
+        foreach(var transition in Enum.GetValues<KSA.PatchTransition>())
+        {
+            var copy=transition;
+            _=KsaUiLanguages.FlightPlanCallsitePatch.PlanningTransitionText(ref copy);
+            Require(copy.Equals(transition), "Patch transition enum values are unchanged by display lookups");
+        }
+        KsaUiLanguages.FlightPlanUiScopePatch.Enter(out int previousScope);
+        Require(KsaUiLanguages.FlightPlanCheckboxCaptionPatch.DisplayCaption("Hide Orbit").ToString()=="隐藏轨道", "Flight-plan checkbox uses Chinese display inside its drawing scope");
+        KsaUiLanguages.FlightPlanUiScopePatch.Leave(null,previousScope);
+        Require(KsaUiLanguages.FlightPlanCheckboxCaptionPatch.DisplayCaption("Hide Orbit").ToString()=="Hide Orbit", "Shared checkbox caption is unchanged outside flight-plan drawing");
+        foreach(var method in KsaUiLanguages.FlightPlanCallsitePatch.TargetMethods())
+        {
+            var patched=KsaUiLanguages.FlightPlanCallsitePatch.Translate(PatchProcessor.GetOriginalInstructions(method).Select(i=>new CodeInstruction(i)),method).ToList();
+            Require(patched.Any(i=>i.operand is MethodInfo m && m.DeclaringType==typeof(KsaUiLanguages.FlightPlanCallsitePatch)), "Flight renderer has actual display call-site wrappers: "+method.Name);
+        }
+        results.Add("PASS: Flight-plan fields, dynamic burn menus and scoped checkbox captions");
+
+        string[] controls={"Enter My Craft##seat1","Dock###dock","In###tankxferin","Set Target: Hohmann###target-port","Tank 'Resources'###tankResources"};
+        var chineseControls=controls.ToDictionary(s=>s,KsaUiLanguages.PartContextCaptionPatch.InteractiveText);
+        Require(chineseControls[controls[0]].StartsWith("进入 My Craft###",StringComparison.Ordinal), "Part menu keeps the dynamic craft name");
+        Require(chineseControls[controls[3]].StartsWith("设置目标: Hohmann###",StringComparison.Ordinal), "Docking menu does not interpret a vehicle name as a translation key");
+        Require(KsaUiLanguages.PartContextCaptionPatch.InteractiveText("Player Custom") == "Player Custom", "Unknown part-menu labels retain their original text");
+        int previousDepth=KsaUiLanguages.PartContextFieldScopePatch.Depth;
+        KsaUiLanguages.PartContextFieldScopePatch.Depth=1;
+        var flows=Enum.GetNames<KSA.FlowRule>();
+        var sourceFlows=flows.Where(KsaUiLanguages.PartContextFieldCaptionPatch.FlowOptionKeys.Contains).ToArray();
+        Require(sourceFlows.Length==4 && sourceFlows.All(s=>KsaUiLanguages.PartContextFieldCaptionPatch.FlowPreviewText(s)!=s), "All four actual flow-rule options have plain display translations");
+        var chineseFlows=sourceFlows.ToDictionary(s=>s,KsaUiLanguages.PartContextFieldCaptionPatch.FlowOptionText);
+        Require(KsaUiLanguages.PartContextFieldCaptionPatch.DisplayVariable("Fuel Flow").ToString()=="推进剂供给方式", "Part field label is translated separately from its source ID");
+        KsaUiLanguages.PartContextFieldScopePatch.Depth=0;
+        Require(sourceFlows.All(s=>KsaUiLanguages.PartContextFieldCaptionPatch.FlowOptionText(s)==s), "Other flow-rule widgets remain unchanged outside part scope");
+        KsaUiLanguages.PartContextFieldScopePatch.Depth=previousDepth;
+        foreach(var method in KsaUiLanguages.PartContextCaptionPatch.TargetMethods())
+            _=KsaUiLanguages.PartContextCaptionPatch.Translate(PatchProcessor.GetOriginalInstructions(method).Select(i=>new CodeInstruction(i)),method).ToList();
+        results.Add("PASS: Part and docking names, original axes and scoped flow-rule captions");
+
+        KsaUiLanguages.Runtime.ApplyLanguage("en-US");
+        foreach(string menu in burnMenus)
+            Require(HashGuiId(KsaUiLanguages.FlightPlanCallsitePatch.PlanningBurnActionMenuText(menu),0x735A1913)==HashGuiId(chineseMenus[menu],0x735A1913), "Dynamic burn-action ID is stable across languages");
+        Require(HashGuiId(KsaUiLanguages.FlightPlanCallsitePatch.PlanningParentDepartureMenuText(departure),0x735A1913)==HashGuiId(chineseDeparture,0x735A1913), "Departure-action ID is stable across languages");
+        foreach(string header in headers)
+            Require(HashGuiId(KsaUiLanguages.FlightPlanCallsitePatch.PlanningCollapsingHeaderText(header),0x735A1913)==HashGuiId(chineseHeaders[header],0x735A1913), "Dynamic patch-header ID is stable across languages");
+        foreach(string control in controls)
+            foreach(uint seed in new uint[]{0,0x735A1913})
+                Require(HashGuiId(KsaUiLanguages.PartContextCaptionPatch.InteractiveText(control),seed)==HashGuiId(chineseControls[control],seed), "Part/docking interactive IDs are stable across languages");
+        KsaUiLanguages.PartContextFieldScopePatch.Depth=1;
+        foreach(string flow in sourceFlows)
+            Require(KsaUiLanguages.PartContextFieldCaptionPatch.FlowPreviewText(flow)==flow
+                && HashGuiId(KsaUiLanguages.PartContextFieldCaptionPatch.FlowOptionText(flow),0x735A1913)==HashGuiId(chineseFlows[flow],0x735A1913), "Flow-rule English previews and option IDs are preserved");
+        KsaUiLanguages.PartContextFieldScopePatch.Depth=previousDepth;
+        KsaUiLanguages.Runtime.ApplyLanguage("zh-CN");
+        results.Add("PASS: Native ImGui hashes for flight, part and flow-rule language round trips");
+    }
+
+    private static void CheckResourceAndTimeCaptions(List<string> results)
+    {
+        string[] captions={"Automatic","Engine Resources###EngineResources8","Fuel Lines###FuelLines123"};
+        var chinese=captions.ToDictionary(s=>s,KsaUiLanguages.ResourceUtilityCaptionPatch.InteractiveText);
+        Require(chinese[captions[1]]=="发动机资源###EngineResources8", "Resource header retains the original native suffix");
+        Require(KsaUiLanguages.ResourceUtilityCaptionPatch.PlainText("Resources")=="Resources"
+            && KsaUiLanguages.ResourceUtilityCaptionPatch.PlainText("KSA_STG_ORDER")=="KSA_STG_ORDER", "Resource window IDs and drag payloads remain byte-exact");
+        Require(KsaUiLanguages.ResourceUtilityCaptionPatch.InteractiveText("My Generator###custom")=="My Generator###custom", "Unknown device and part names remain unchanged");
+        string group=KsaUiLanguages.ResourceUtilityCaptionPatch.GroupText("Group 7",true);
+        Require(group=="分组 7###Group 7" && KsaUiLanguages.ResourceUtilityCaptionPatch.GroupText("Group 7",false)=="分组 7", "Resource group caption and drag preview use separate display forms");
+        var depth=AccessTools.Field(typeof(KsaUiLanguages.ResourceUtilityCaptionPatch),"_fieldDepth");
+        int previous=(int)depth.GetValue(null)!;
+        try
+        {
+            depth.SetValue(null,1);
+            Require(KsaUiLanguages.PartContextFieldCaptionPatch.DisplayVariable("Number Tanks").ToString()=="显示储箱编号", "Resource checkbox display composes with the existing helper patch");
+            Require(KsaUiLanguages.PartContextFieldCaptionPatch.DisplayVariable("Unknown Field").ToString()=="Unknown Field", "Scoped resource helper does not alter unknown fields");
+            depth.SetValue(null,0);
+            Require(KsaUiLanguages.PartContextFieldCaptionPatch.DisplayVariable("Number Tanks").ToString()=="Number Tanks", "Resource field labels stay unchanged outside their scope");
+        }
+        finally { depth.SetValue(null,previous); }
+        foreach(var method in KsaUiLanguages.ResourceUtilityCaptionPatch.TargetMethods())
+        {
+            var original=PatchProcessor.GetOriginalInstructions(method).Select(i=>new CodeInstruction(i)).ToList();
+            var patched=KsaUiLanguages.ResourceUtilityCaptionPatch.Translate(original,method).ToList();
+            Require(patched.Any(i=>i.operand is MethodInfo m && m.DeclaringType==typeof(KsaUiLanguages.ResourceUtilityCaptionPatch)), "Actual resource renderer has scoped display wrappers");
+            Require(patched.Where(i=>i.opcode==System.Reflection.Emit.OpCodes.Ldstr).Select(i=>i.operand)
+                .SequenceEqual(original.Where(i=>i.opcode==System.Reflection.Emit.OpCodes.Ldstr).Select(i=>i.operand)), "Resource rendering keeps all original literal inputs");
+            if(method.DeclaringType==typeof(KSA.Tank))
+                Require(patched.Count(i=>i.operand is MethodInfo m && m.DeclaringType==typeof(ImGui) && m.Name==nameof(ImGui.CollapsingHeader))
+                    ==original.Count(i=>i.operand is MethodInfo m && m.DeclaringType==typeof(ImGui) && m.Name==nameof(ImGui.CollapsingHeader)), "Tank substance names retain their original native header call");
+        }
+        results.Add("PASS: Resource captions, original payloads, device names and shared checkbox scopes");
+        Require(KsaUiLanguages.FlightPlanCallsitePatch.PlanningTimeValue("4.89 minutes")=="4.89 分钟"
+            && KsaUiLanguages.FlightPlanCallsitePatch.PlanningTimeValue(" 1,234.50 seconds ")==" 1,234.50 秒 ", "Numeric time readouts keep exact number formatting and spacing");
+        foreach(string unknown in new[]{"Earth","42 min","1,2 seconds","My 42 minutes","0.4 km/s"})
+            Require(KsaUiLanguages.FlightPlanCallsitePatch.PlanningTimeValue(unknown)==unknown, "Time caption parser preserves nonmatching names, units and values");
+        results.Add("PASS: Time-value unit translation keeps numeric formatting and unknown text");
+        KsaUiLanguages.Runtime.ApplyLanguage("en-US");
+        foreach(string caption in captions)
+            foreach(uint seed in new uint[]{0,0x735A1913})
+                Require(HashGuiId(KsaUiLanguages.ResourceUtilityCaptionPatch.InteractiveText(caption),seed)==HashGuiId(chinese[caption],seed), "Resource control ID hashes remain stable in both languages");
+        Require(HashGuiId(KsaUiLanguages.ResourceUtilityCaptionPatch.GroupText("Group 7",true),0x735A1913)==HashGuiId(group,0x735A1913), "Resource group ID remains stable across language switches");
+        Require(KsaUiLanguages.FlightPlanCallsitePatch.PlanningTimeValue("4.89 minutes")=="4.89 minutes", "Time readout restores English exactly");
+        KsaUiLanguages.Runtime.ApplyLanguage("zh-CN");
+        results.Add("PASS: Resource native ID hashes and time units restore English safely");
+    }
+
+    private static void CheckSaveAndManifestCaptions(List<string> results)
+    {
+        string[] labels={"Load","Refresh","Apoapsis","Planets"};
+        var chinese=labels.ToDictionary(s=>s,s=>KsaUiLanguages.UtilityWindowPatches.MenuCaption(s).ToString());
+        Require(chinese["Apoapsis"].StartsWith("远点高度###",StringComparison.Ordinal), "Manifest orbit column reports altitude rather than radius");
+        Require(KsaUiLanguages.UtilityWindowPatches.PlainCaption("Vehicle").ToString()=="飞船"
+            && !KsaUiLanguages.UtilityWindowPatches.PlainCaption("Vehicle").ToString().Contains("###"), "Manifest type readout is plain text");
+        var menuKeys=(HashSet<string>)AccessTools.Field(typeof(KsaUiLanguages.UtilityWindowPatches),"MenuLabels").GetValue(null)!;
+        Require(menuKeys.All(KsaUiLanguages.Runtime.CurrentPack.Utility.ContainsKey), "All save/manifest fixed menu and column labels have dictionary entries");
+        Require(KsaUiLanguages.UtilityWindowPatches.PlainCaption("FixedStar").ToString()=="恒星"
+            && KsaUiLanguages.UtilityWindowPatches.PlainCaption("PlanetaryBody").ToString()=="行星类天体"
+            && KsaUiLanguages.UtilityWindowPatches.PlainCaption("AtmosphericBody").ToString()=="有大气天体", "Observed Core body implementation types have scoped readable names");
+        Require(KsaUiLanguages.UtilityWindowPatches.MenuCaption("Player Custom Save").ToString()=="Player Custom Save", "Unknown save labels are not changed");
+        var message=AccessTools.Method(typeof(KsaUiLanguages.UtilityWindowPatches),"TranslateConfirmMessage");
+        const string custom="Earth's {0}";
+        string source="Are you sure you want to delete save '"+custom+"'?";
+        string translated=(string)message.Invoke(null,new object[]{"DELETE SAVE",source})!;
+        Require(translated=="确定要删除游戏存档“"+custom+"”吗？", "Save confirmation preserves quotes and placeholder-like text in the actual filename");
+        Require((string)message.Invoke(null,new object[]{"Unknown","Player Custom Message"})! == "Player Custom Message", "Unknown confirmation text remains unchanged");
+        foreach(var method in KsaUiLanguages.UtilityWindowPatches.TargetMethods())
+        {
+            var original=PatchProcessor.GetOriginalInstructions(method).Select(i=>new CodeInstruction(i)).ToList();
+            var patched=KsaUiLanguages.UtilityWindowPatches.Translate(original,method).ToList();
+            Require(patched.Where(i=>i.opcode==System.Reflection.Emit.OpCodes.Ldstr).Select(i=>i.operand)
+                .SequenceEqual(original.Where(i=>i.opcode==System.Reflection.Emit.OpCodes.Ldstr).Select(i=>i.operand)), "Save/manifest method retains source names, formats and IDs");
+            Require(patched.Count(i=>i.operand is MethodInfo m && m.DeclaringType==typeof(KSA.StringInputPopup) && m.Name=="Create")
+                ==original.Count(i=>i.operand is MethodInfo m && m.DeclaringType==typeof(KSA.StringInputPopup) && m.Name=="Create"), "Input popup creation and callbacks use the original native call");
+        }
+        results.Add("PASS: Save and manifest captions, dynamic confirmation names and original input callbacks");
+        var popup=(KSA.StringInputPopup)RuntimeHelpers.GetUninitializedObject(typeof(KSA.StringInputPopup));
+        var title=AccessTools.Field(typeof(KSA.StringInputPopup),"_title");
+        title.SetValue(popup,"SAVE GAME");
+        KsaUiLanguages.HudSavePopupScopePatch.Enter(popup,out var previous);
+        try
+        {
+            Require(KsaUiLanguages.HudSavePopupCaptionPatch.DisplayTitle("SAVE GAME")=="保存游戏"
+                && KsaUiLanguages.HudSavePopupCaptionPatch.DisplayPrompt("Please enter a filename to continue.")=="请输入存档名称。", "Game-save input popup has scoped Chinese title and filename hint");
+            Require((string)title.GetValue(popup)! == "SAVE GAME", "Save popup keeps its original stored title");
+        }
+        finally { KsaUiLanguages.HudSavePopupScopePatch.Leave(previous); }
+        Require(KsaUiLanguages.HudSavePopupCaptionPatch.DisplayPrompt("Please enter a filename to continue.")=="Please enter a filename to continue.", "Unknown filename popups remain outside save scope");
+        KsaUiLanguages.Runtime.ApplyLanguage("en-US");
+        foreach(string label in labels)
+            Require(HashGuiId(KsaUiLanguages.UtilityWindowPatches.MenuCaption(label).ToString(),0x735A1913)==HashGuiId(chinese[label],0x735A1913), "Save/manifest control ID remains stable across languages");
+        Require((string)message.Invoke(null,new object[]{"DELETE SAVE",source})! ==source
+            && KsaUiLanguages.HudSavePopupCaptionPatch.DisplayTitle("SAVE GAME")=="SAVE GAME", "Save confirmation and title restore exact English");
+        KsaUiLanguages.Runtime.ApplyLanguage("zh-CN");
+        results.Add("PASS: Save popup display scope, unchanged title field and native menu ID round trip");
     }
 
     private static void Require(bool condition, string message)

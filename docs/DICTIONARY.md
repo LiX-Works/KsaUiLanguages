@@ -2,13 +2,15 @@
 
 字典把游戏原文、现有中文和使用场景放在一起，方便人工或其他 AI 校对，也方便以后添加语言。
 
-从 [v0.4.0 下载页](https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.4.0) 获取 **KsaUiLanguages-0.4.0-dictionary.zip**。包内包含：
+从 [v0.4.1 下载页](https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.4.1) 获取 **KsaUiLanguages-0.4.1-dictionary.zip**。包内包含：
 
 - review-catalog.zh-CN.json：完整校对记录，适合提供给 AI。
 - review-catalog.zh-CN.csv：相同记录的表格视图，方便查看与筛选。
 - 校对说明.txt：可以与字典一起交给校对者。
 
-字典有 1016 条记录，其中 415 条有作者填写的语义备注。备注说明界面位置、操作对象或容易混淆的意思；本身清楚的条目可以留空。
+字典有 1480 条记录，其中 602 条有作者填写的语义备注。备注说明界面位置、操作对象或容易混淆的意思；本身清楚的条目可以留空。
+
+planning 区段用于轨道规划和轨迹图，utility 区段用于存档、资源和对象清单等常用窗口。
 
 controls 区段用于键位动作和赋值提示，与 ui 菜单区段分开：例如菜单中的 Camera Mode 是“相机模式”，对应键位动作则是“切换相机模式”。hud 区段用于仪表显示条件及布局管理；布局表头 Name 是“名称”，乘员表头的同词则是“姓名”。
 

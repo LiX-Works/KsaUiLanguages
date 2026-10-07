@@ -25,7 +25,7 @@ NAMING_NOTES_FILE = ROOT / "reference" / "part-name-evidence-5541.json"
 
 PLACEHOLDER_RE = re.compile(r"\{[^{}]+\}")
 VERSION_RE = re.compile(r"<Version>\s*([^<]+?)\s*</Version>")
-SECTION_ORDER = ("native", "literals", "ui", "tooltips", "editor", "startup", "parts", "controls", "hud")
+SECTION_ORDER = ("native", "literals", "ui", "tooltips", "editor", "startup", "parts", "controls", "hud", "planning", "utility")
 COVERAGE = {
     "native": "resource mapped, per-entry visual not verified",
     "ui": "limited hooks, per-entry not verified",
@@ -36,6 +36,8 @@ COVERAGE = {
     "parts": "display-only mappings; fallback original preserved; visual check pending",
     "controls": "settings action captions and binding-popup text; binding values untouched; per-entry visual not all verified",
     "hud": "HUD layout and context-window captions; layout names, canvas IDs and visibility settings untouched; per-entry visual not all verified",
+    "planning": "flight and transfer planning window captions; calculations and plan identifiers unchanged; visual coverage recorded separately",
+    "utility": "save/load, resources and object-window captions; saved names, storage keys and runtime values unchanged; visual coverage recorded separately",
 }
 PRESERVE_TERMS = (
     "RCS", "Δv", "TWR", "Isp", "EVA", "HUD", "IVA", "SOI",
@@ -184,6 +186,8 @@ def context_for(section: str, native_item=None) -> str:
         "ui": "Menu, window, or HUD label keyed by its English display text.",
         "controls": "Controls settings action name or key-assignment popup caption; actual bindings and config keys unchanged.",
         "hud": "HUD layouts or gauge visibility conditions; names, storage IDs and context values remain original.",
+        "planning": "Flight plan, maneuver and transfer planning UI; names and calculation inputs remain original.",
+        "utility": "Save/load, resource or universe object UI; persisted identifiers and user names remain original.",
         "tooltips": "Tooltip text keyed by its English source string.",
         "editor": "Vehicle editor or part-editor label/literal; some entries may be fragments.",
         "startup": "Startup/setup screen label or option; options were not all operated individually.",

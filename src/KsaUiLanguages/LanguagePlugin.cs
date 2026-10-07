@@ -27,6 +27,8 @@ public sealed class LanguagePack
     public Dictionary<string, string> Parts { get; set; } = new();
     public Dictionary<string, string> Controls { get; set; } = new();
     public Dictionary<string, string> Hud { get; set; } = new();
+    public Dictionary<string, string> Planning { get; set; } = new();
+    public Dictionary<string, string> Utility { get; set; } = new();
 }
 
 [StarMapMod]
@@ -132,6 +134,10 @@ public static class Runtime
         foreach (var entry in pack.Hud)
             if (!Tokens(entry.Key).SequenceEqual(Tokens(entry.Value)))
                 throw new InvalidDataException($"HUD placeholder mismatch: {entry.Key}");
+        foreach (var section in new[] { pack.Planning, pack.Utility })
+            foreach (var entry in section)
+                if (!Tokens(entry.Key).SequenceEqual(Tokens(entry.Value)))
+                    throw new InvalidDataException($"Window placeholder mismatch: {entry.Key}");
         CurrentPack = pack;
         SelectedLocale = locale;
         Translations.Clear();
@@ -143,7 +149,7 @@ public static class Runtime
             _originalNavLabels ??= (string[])labels.Clone();
             for (int i = 0; i < labels.Length; i++) labels[i] = Literal(_originalNavLabels[i]);
         }
-        Log($"Language {locale}: {Translations.Count} native, {pack.Literals.Count} literals, {pack.Ui.Count} UI labels, {pack.Tooltips.Count} tooltips, {pack.Editor.Count} editor labels, {pack.Startup.Count} startup labels, {pack.Parts.Count} part names, {pack.Controls.Count} control captions, {pack.Hud.Count} HUD captions.");
+        Log($"Language {locale}: {Translations.Count} native, {pack.Literals.Count} literals, {pack.Ui.Count} UI labels, {pack.Tooltips.Count} tooltips, {pack.Editor.Count} editor labels, {pack.Startup.Count} startup labels, {pack.Parts.Count} part names, {pack.Controls.Count} control captions, {pack.Hud.Count} HUD captions, {pack.Planning.Count} planning captions, {pack.Utility.Count} utility captions.");
     }
 
     private static IEnumerable<string> Tokens(string text) => Regex.Matches(text, @"\{[^{}]+\}")
@@ -170,6 +176,21 @@ public static class Runtime
     public static string StartupText(string original) => CurrentPack.Startup.GetValueOrDefault(original, original);
 
     public static string ControlText(string original) => CurrentPack.Controls.GetValueOrDefault(original, original);
+
+    public static string PlanningText(string original) => CurrentPack.Planning.GetValueOrDefault(original, original);
+    public static string UtilityText(string original) => CurrentPack.Utility.GetValueOrDefault(original, original);
+
+    public static string PlanningMenuText(string original) => ScopedMenuText(original, pack => pack.Planning);
+    public static string UtilityMenuText(string original) => ScopedMenuText(original, pack => pack.Utility);
+
+    private static string ScopedMenuText(string original, Func<LanguagePack, Dictionary<string, string>> section)
+    {
+        int separator = original.IndexOf("##", StringComparison.Ordinal);
+        string visible = separator < 0 ? original : original[..separator];
+        if (!Packs.Values.Any(pack => section(pack).ContainsKey(visible))) return original;
+        int stable = original.IndexOf("###", StringComparison.Ordinal);
+        return section(CurrentPack).GetValueOrDefault(visible, visible) + (stable >= 0 ? original[stable..] : "###" + original);
+    }
 
     public static string HudText(string original) => CurrentPack.Hud.GetValueOrDefault(original, UiText(original));
 

@@ -12,10 +12,19 @@ public static class HudWindowTitlePatch
     public static bool IsKnownWindow(ImGuiWindow window)
         => window.GetType().DeclaringType == typeof(GaugeContextAssignmentWindow)
             || window.GetType().DeclaringType == typeof(LayoutSaves)
-            || window.GetType().DeclaringType == typeof(KittenRosterWindow);
+            || window.GetType().DeclaringType == typeof(KittenRosterWindow)
+            || window.GetType().DeclaringType == typeof(GameSaves)
+            || window.GetType().DeclaringType == typeof(VehicleSaves)
+            || window.GetType().DeclaringType == typeof(UniverseManifest)
+            || window.GetType().DeclaringType == typeof(ResourceGroupsPanel)
+            || window is GroundTrackWindow or TargetTrackWindow;
 
     public static string DisplayTitle(string original, ImGuiWindow window)
-        => IsKnownWindow(window) ? Runtime.HudMenuText(original) : original;
+    {
+        if (!IsKnownWindow(window)) return original;
+        string utility=Runtime.UtilityMenuText(original);
+        return utility!=original ? utility : Runtime.HudMenuText(original);
+    }
 
     [HarmonyTranspiler]
     public static IEnumerable<CodeInstruction> Translate(IEnumerable<CodeInstruction> instructions)
@@ -42,6 +51,9 @@ public static class HudConsoleTitlePatch
     {
         if (signature.SequenceEqual("KSA-LAY") && title.SequenceEqual("LAYOUTS"))
             title = Runtime.HudText(title.ToString()).AsSpan();
+        else if(signature.SequenceEqual("KSA-SAV") || signature.SequenceEqual("KSA-VEH")
+            || signature.SequenceEqual("KSA-MAN") || signature.SequenceEqual("KSA-RES"))
+            title=Runtime.UtilityText(title.ToString()).AsSpan();
     }
 }
 
@@ -85,17 +97,19 @@ public static class HudWindowViewMenuPatch
 public static class HudSavePopupScopePatch
 {
     [ThreadStatic] public static bool IsLayout;
+    [ThreadStatic] public static bool IsUtility;
     private static readonly FieldInfo Title = AccessTools.Field(typeof(StringInputPopup), "_title");
 
     [HarmonyPrefix]
-    public static void Enter(StringInputPopup __instance, out bool __state)
+    public static void Enter(StringInputPopup __instance, out (bool Layout, bool Utility) __state)
     {
-        __state = IsLayout;
+        __state = (IsLayout, IsUtility);
         IsLayout = Equals(Title.GetValue(__instance), "SAVE LAYOUT");
+        IsUtility = Title.GetValue(__instance) is "SAVE GAME" or "SAVE VEHICLE";
     }
 
     [HarmonyFinalizer]
-    public static void Leave(bool __state) => IsLayout = __state;
+    public static void Leave((bool Layout, bool Utility) __state) { IsLayout = __state.Layout; IsUtility = __state.Utility; }
 }
 
 [HarmonyPatch]
@@ -112,8 +126,10 @@ public static class HudSavePopupCaptionPatch
         yield return AccessTools.Method(typeof(StringInputPopup), "DrawSanitizedHint");
     }
 
-    public static string DisplayTitle(string original) => original == "SAVE LAYOUT" ? Runtime.HudText(original) : original;
-    public static string DisplayPrompt(string original) => HudSavePopupScopePatch.IsLayout ? Runtime.HudText(original) : original;
+    public static string DisplayTitle(string original) => original == "SAVE LAYOUT" ? Runtime.HudText(original)
+        : original is "SAVE GAME" or "SAVE VEHICLE" ? Runtime.UtilityText(original) : original;
+    public static string DisplayPrompt(string original) => HudSavePopupScopePatch.IsLayout ? Runtime.HudText(original)
+        : HudSavePopupScopePatch.IsUtility ? Runtime.UtilityText(original) : original;
 
     [HarmonyTranspiler]
     public static IEnumerable<CodeInstruction> Translate(IEnumerable<CodeInstruction> instructions)

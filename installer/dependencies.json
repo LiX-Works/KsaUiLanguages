@@ -2,13 +2,13 @@
   "productId": "org.ksa.uilanguages.installer",
   "installerVersion": "4",
   "gameVersion": "2026.10.7.5541",
-  "pluginVersion": "0.4.0",
+  "pluginVersion": "0.4.1",
   "archives": [
     {
       "name": "plugin.zip",
-      "version": "0.4.0",
-      "source": "https://github.com/LiX-Works/KsaUiLanguages/releases/download/v0.4.0/KsaUiLanguages-0.4.0-build5541.zip",
-      "sha256": "19b174379bf32f18a470935b47ec4a7fe30f4f6e2540fde0a41d314aec1daadf"
+      "version": "0.4.1",
+      "source": "https://github.com/LiX-Works/KsaUiLanguages/releases/download/v0.4.1/KsaUiLanguages-0.4.1-build5541.zip",
+      "sha256": "7d1b31061ae586b2d5954108c053ad2dab567aa4018e8cd0182ce07f0a19ade2"
     },
     {
       "name": "loader.zip",
