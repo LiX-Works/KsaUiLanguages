@@ -1,11 +1,11 @@
-KSA 中文安装说明 — v0.4.2 预览版
+KSA 中文安装说明 — v0.5.0 预览版
 
 Kitten Space Agency（KSA）是一款仍在开发中的太空模拟游戏。
 本包提供部分简体中文，支持 Windows x64 和游戏
 2026.10.7.5541 / 2026.10.10.5554。先确认对应原版游戏能正常运行。
 
 三步开始
-1. 完整解压 KsaUiLanguages-0.4.2-installer5-win-x64.zip。
+1. 完整解压 KsaUiLanguages-0.5.0-installer5-win-x64.zip。
 2. 关闭游戏，双击 Install.cmd，选择包含 KSA.dll 的游戏目录。
 3. 从桌面“KSA 中文版 (5554)”或“KSA 中文版 (5541)”启动。
 
@@ -33,4 +33,4 @@ Language可即时切换，当前选择只对本次运行生效。
 非官方社区汉化，不含游戏或Starship模组。
 代码/译文MIT，字体OFL，第三方组件保留各自许可。
 项目：https://github.com/LiX-Works/KsaUiLanguages
-下载：https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.4.2
+下载：https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.5.0

@@ -2,7 +2,7 @@
 
 字典把游戏原文、现有中文和使用场景放在一起，方便人工或其他 AI 校对，也方便以后添加语言。
 
-从 [v0.4.2 下载页](https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.4.2) 获取 **KsaUiLanguages-0.4.2-dictionary.zip**。包内包含：
+从 [v0.5.0 下载页](https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.5.0) 获取 **KsaUiLanguages-0.5.0-dictionary.zip**。包内包含：
 
 - review-catalog.zh-CN.json：完整校对记录，适合提供给 AI。
 - review-catalog.zh-CN.csv：相同记录的表格视图，方便查看与筛选。

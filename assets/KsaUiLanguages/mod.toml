@@ -1,5 +1,5 @@
 name = "KSA UI Languages"
-version = "0.4.2"
+version = "0.5.0"
 description = "Partial Chinese UI with English fallback for KSA builds 5541 and 5554"
 assets = []
 

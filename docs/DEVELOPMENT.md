@@ -34,7 +34,7 @@
 .\tools\package.ps1
 ~~~
 
-生成 dist/KsaUiLanguages-0.4.2-build5541-5554.zip 和 SHA256SUMS.txt。打包使用新的 staging 目录与文件白名单，拒绝游戏/加载器 DLL。
+生成 dist/KsaUiLanguages-0.5.0-build5541-5554.zip 和 SHA256SUMS.txt。打包使用新的 staging 目录与文件白名单，拒绝游戏/加载器 DLL。
 
 若需要与当前 Git 提交严格对应的源码包，先提交所有准备发行的更改，再运行：
 
@@ -80,3 +80,6 @@ v0.4.1 通过47项语言与控件检查，字典为1480条、602条语义备注�
 v0.4.2同时支持两个精确游戏版本，拒绝未验证版本；同一发行插件在两版运行54项检查。5554已实际抽查欢迎页、飞行计划、转移规划、中英文切换、编辑器和资源分组，并验证独立测试存档保存/载入。长存档名在载入确认中截断是已知排版问题。
 
 升级时可先运行 tools/check_compatibility.ps1，对已知基线与候选游戏的补丁目标/指令摘要做差异预检。它不初始化汉化Runtime或安装补丁，不能替代候选构建、LanguageChecks和GUI验证，详见 [CompatibilityProbe说明](../src/CompatibilityProbe/README.md)。
+
+
+v0.5.0统一使用新的版本编号，功能与v0.4.2一致；后续公开更新按0.1递增，补丁位保持0，见[版本编号规则](VERSIONING.md)。历史v0.4.2检查记录保留。
