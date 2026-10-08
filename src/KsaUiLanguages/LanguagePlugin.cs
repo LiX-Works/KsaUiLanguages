@@ -35,14 +35,16 @@ public sealed class LanguagePack
 public sealed class LanguagePlugin
 {
     private Harmony? _patches;
+    public static bool SupportsGameVersion(string? version)
+        => version is "2026.10.7.5541" or "2026.10.10.5554";
 
     [StarMapBeforeMain]
     public void BeforeMain()
     {
         var gameVersion = typeof(KSA.Program).Assembly.GetName().Version?.ToString();
-        if (gameVersion != "2026.10.7.5541")
+        if (!SupportsGameVersion(gameVersion))
         {
-            Runtime.Log($"Prototype disabled: expected 2026.10.7.5541, found {gameVersion}.");
+            Runtime.Log($"UI language mod disabled: supported builds are 2026.10.7.5541 and 2026.10.10.5554; found {gameVersion}.");
             return;
         }
         try
@@ -50,7 +52,7 @@ public sealed class LanguagePlugin
             Runtime.Initialize();
             _patches = new Harmony("org.ksa.uilanguages.prototype");
             _patches.PatchAll(typeof(LanguagePlugin).Assembly);
-            Runtime.Log("Initialized independent language prototype for build 5541.");
+            Runtime.Log($"Initialized UI language mod for game {gameVersion}.");
         }
         catch (Exception error)
         {

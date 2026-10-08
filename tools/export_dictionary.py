@@ -339,6 +339,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR, help="Output directory (default: work/exports/dictionary-local).")
     parser.add_argument("--game-dir", type=Path, default=DEFAULT_GAME_DIR, help="KSA install directory; may also point directly to Content/Core.")
+    parser.add_argument("--parts-game-version", default="2026.10.7.5541", choices=("2026.10.7.5541", "2026.10.10.5554"), help="Version of the supplied Core XML (source label, not an automatic compatibility check).")
     args = parser.parse_args()
 
     locale = read_json(LOCALE_FILE)
@@ -383,6 +384,9 @@ def main() -> int:
     meta = {
         "schemaVersion": "1.0",
         "gameVersion5541": game_version,
+        "nativeEnglishSourceGameVersion": game_version,
+        "partsXmlGameVersion": args.parts_game_version,
+        "supportedGameVersions": ["2026.10.7.5541", "2026.10.10.5554"],
         "pluginVersion": plugin_version,
         "locale": locale.get("locale", "zh-CN"),
         "sourceFiles": source_files,

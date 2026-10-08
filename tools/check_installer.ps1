@@ -1,9 +1,20 @@
-param([string]$GameDir = 'C:\Program Files\Kitten Space Agency')
+param(
+    [string]$GameDir = 'C:\Program Files\Kitten Space Agency',
+    [string]$OtherGameDir = ''
+)
 $ErrorActionPreference = 'Stop'
 $taskProject = Split-Path $PSScriptRoot -Parent
 $taskWinPS = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
-$taskWork = Join-Path $taskProject ('work\installer-checks-' + [guid]::NewGuid().ToString('N').Substring(0,8))
+$taskWork = Join-Path $taskProject ('work\run-logs\installer-v042-checks-' + [guid]::NewGuid().ToString('N').Substring(0,8))
 $taskMetadata = Get-Content -Raw -LiteralPath (Join-Path $taskProject 'installer\dependencies.json') | ConvertFrom-Json
+. (Join-Path $taskProject 'installer\Common.ps1')
+$taskSupportedVersions = @(Get-TaskPackageGameVersions -Package $taskMetadata)
+$taskGameVersion = Get-TaskGameVersion -GameDir $GameDir
+if ($taskGameVersion -notin $taskSupportedVersions) { throw 'The primary test game must be a supported real installation.' }
+if ($OtherGameDir) {
+    $taskOtherVersion = Get-TaskGameVersion -GameDir $OtherGameDir
+    if ($taskOtherVersion -notin $taskSupportedVersions -or $taskOtherVersion -eq $taskGameVersion) { throw 'The other game must be the other supported build.' }
+}
 $taskZip = Join-Path $taskProject ("dist\KsaUiLanguages-$($taskMetadata.pluginVersion)-installer$($taskMetadata.installerVersion)-win-x64.zip")
 Expand-Archive -LiteralPath $taskZip -DestinationPath (Join-Path $taskWork 'package')
 $taskPackage = Join-Path $taskWork 'package\KsaUiLanguages-Installer'
@@ -20,6 +31,7 @@ function Invoke-TaskChild([string]$Script, [string[]]$Arguments, [int]$Expected 
     return ($taskOutput -join [Environment]::NewLine)
 }
 $taskProtected = @((Join-Path $GameDir 'KSA.dll'),(Join-Path $GameDir 'Content\manifest.toml'))
+if ($OtherGameDir) { $taskProtected += @((Join-Path $OtherGameDir 'KSA.dll'),(Join-Path $OtherGameDir 'Content\manifest.toml')) }
 $taskUserData = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'My Games\Kitten Space Agency'
 foreach ($taskName in @('manifest.toml','settings.toml')) {
     $taskPath = Join-Path $taskUserData $taskName
@@ -36,6 +48,8 @@ Require-Task ((Test-Path -LiteralPath (Join-Path $taskState.loaderDir 'StarMap.e
 $taskValidation = Invoke-TaskChild -Script (Join-Path $taskRoot 'Launch.ps1') -Arguments @('-ValidateOnly','-NonInteractive')
 $taskValidated = $taskValidation | ConvertFrom-Json
 Require-Task ($taskValidated.status -eq 'VALIDATED' -and !$taskValidated.gameStarted) 'Launcher validates on Windows PowerShell 5.1 without starting a game'
+$taskOwnership = Get-Content -Raw -LiteralPath (Join-Path $taskRoot '.ownership.json') | ConvertFrom-Json
+Require-Task ($taskState.gameVersion -eq $taskGameVersion -and $taskOwnership.gameVersion -eq $taskGameVersion -and $taskValidated.gameVersion -eq $taskGameVersion) 'Ownership, installation state and launcher identify the selected real build'
 $taskInstance = Join-Path $taskRoot 'instance'
 New-Item -ItemType Directory -Path (Join-Path $taskInstance 'test-save') -Force | Out-Null
 [IO.File]::WriteAllText((Join-Path $taskInstance 'test-save\sentinel.txt'),'keep this save')
@@ -46,7 +60,37 @@ $null = Invoke-TaskChild -Script (Join-Path $taskPackage 'Install.ps1') -Argumen
 $taskUpdatedManifest = Get-Content -Raw -LiteralPath (Join-Path $taskInstance 'manifest.toml')
 Require-Task ([regex]::Matches($taskUpdatedManifest,'id = "KsaUiLanguages"').Count -eq 1 -and $taskUpdatedManifest.Contains('enabled = false # keep')) 'Reinstall preserves unrelated manifest entries and avoids duplicate mod entries'
 $taskBackupCount = @(Get-ChildItem -LiteralPath (Join-Path $taskRoot 'backups') -Filter 'settings.toml' -Recurse -File).Count
-Require-Task ($taskBackupCount -ge 1 -and [IO.File]::ReadAllText((Join-Path $taskInstance 'settings.toml')) -eq 'test_setting = 42') 'Reinstall backs up configuration and preserves existing settings / saves'
+Require-Task ($taskBackupCount -ge 1 -and [IO.File]::ReadAllText((Join-Path $taskInstance 'settings.toml')) -eq 'test_setting = 42' -and [IO.File]::ReadAllText((Join-Path $taskInstance 'test-save\sentinel.txt')) -eq 'keep this save') 'Reinstall backs up configuration and preserves existing settings / saves'
+if ($taskGameVersion -eq '2026.10.7.5541') {
+    $taskLegacyState = Get-Content -Raw -LiteralPath (Join-Path $taskRoot 'install-state.json') | ConvertFrom-Json
+    $taskLegacyState.PSObject.Properties.Remove('gameVersion')
+    $taskLegacyState.installerVersion = '4'
+    $taskLegacyState | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $taskRoot 'install-state.json') -Encoding utf8
+    $taskLegacyMarker = @{productId=$taskOwnership.productId;rootPath=$taskRoot}
+    $taskLegacyMarker | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $taskRoot '.ownership.json') -Encoding utf8
+    if ($OtherGameDir) {
+        $taskLegacyBefore = (Get-FileHash -LiteralPath (Join-Path $taskRoot 'install-state.json')).Hash
+        $null = Invoke-TaskChild -Script (Join-Path $taskPackage 'Install.ps1') -Arguments @('-GameDir',$OtherGameDir,'-InstallRoot',$taskRoot,'-NonInteractive','-NoShortcut','-AcceptLicenses') -Expected 1
+        Require-Task ((Get-FileHash -LiteralPath (Join-Path $taskRoot 'install-state.json')).Hash -eq $taskLegacyBefore) 'Legacy installer4 root refuses the other build before changing its state'
+    }
+    $null = Invoke-TaskChild -Script (Join-Path $taskPackage 'Install.ps1') -Arguments $taskInstallArgs
+    $taskMigratedState = Get-Content -Raw -LiteralPath (Join-Path $taskRoot 'install-state.json') | ConvertFrom-Json
+    $taskMigratedMarker = Get-Content -Raw -LiteralPath (Join-Path $taskRoot '.ownership.json') | ConvertFrom-Json
+    Require-Task ($taskMigratedState.gameVersion -eq $taskGameVersion -and $taskMigratedMarker.gameVersion -eq $taskGameVersion -and [IO.File]::ReadAllText((Join-Path $taskInstance 'test-save\sentinel.txt')) -eq 'keep this save') 'Same-build installer4 update migrates ownership and retains the existing save'
+}
+if ($OtherGameDir) {
+    $taskStateHash = (Get-FileHash -LiteralPath (Join-Path $taskRoot 'install-state.json')).Hash
+    $taskDeploymentCount = @(Get-ChildItem -LiteralPath (Join-Path $taskRoot 'deployments') -Directory).Count
+    $null = Invoke-TaskChild -Script (Join-Path $taskPackage 'Install.ps1') -Arguments @('-GameDir',$OtherGameDir,'-InstallRoot',$taskRoot,'-NonInteractive','-NoShortcut','-AcceptLicenses') -Expected 1
+    Require-Task ((Get-FileHash -LiteralPath (Join-Path $taskRoot 'install-state.json')).Hash -eq $taskStateHash -and @(Get-ChildItem -LiteralPath (Join-Path $taskRoot 'deployments') -Directory).Count -eq $taskDeploymentCount -and [IO.File]::ReadAllText((Join-Path $taskInstance 'test-save\sentinel.txt')) -eq 'keep this save') 'An owned root refuses the other real build without changing deployments, state or saves'
+    $taskChangedState = Get-Content -Raw -LiteralPath (Join-Path $taskRoot 'install-state.json') | ConvertFrom-Json
+    $taskChangedState.gameDir = $OtherGameDir
+    $taskChangedState | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $taskRoot 'install-state.json') -Encoding utf8
+    $null = Invoke-TaskChild -Script (Join-Path $taskRoot 'Launch.ps1') -Arguments @('-ValidateOnly','-NonInteractive') -Expected 1
+    $taskChangedState.gameDir = $GameDir
+    $taskChangedState | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $taskRoot 'install-state.json') -Encoding utf8
+    Require-Task $true 'Launcher refuses a supported game of a different build from the owned instance'
+}
 $taskForeign = Join-Path $taskWork 'foreign'
 New-Item -ItemType Directory -Path $taskForeign -Force | Out-Null
 [IO.File]::WriteAllText((Join-Path $taskForeign 'sentinel.txt'),'keep foreign files')
@@ -100,6 +144,6 @@ foreach ($taskPath in $taskProtected) {
     if ((Get-FileHash -LiteralPath $taskPath).Hash -ne $taskBefore[$taskPath]) { throw "Protected original file changed: $taskPath" }
 }
 Require-Task $true 'Original game and player configuration hashes remain unchanged'
-$taskReport = @{results=@($taskResults);work=$taskWork;scope='Windows PowerShell 5.1 isolated filesystem tests; no GUI or game launch; no second physical PC test'}
-$taskReport | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $taskProject 'work\run-logs\installer-checks.json') -Encoding utf8
+$taskReport = @{results=@($taskResults);work=$taskWork;gameDir=$GameDir;gameVersion=$taskGameVersion;otherGameDir=$OtherGameDir;scope='Windows PowerShell 5.1 isolated filesystem tests; no GUI or game launch; no second physical PC test'}
+$taskReport | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $taskProject ("work\run-logs\installer-v042-checks-$(([version]$taskGameVersion).Revision).json")) -Encoding utf8
 $taskReport | ConvertTo-Json -Depth 5

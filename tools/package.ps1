@@ -34,7 +34,7 @@ Copy-Item -LiteralPath $taskPlugin -Destination $taskMod
 $taskUnexpectedDlls = @(Get-ChildItem -LiteralPath $taskMod -Recurse -File -Filter '*.dll' |
     Where-Object { $_.Name -ne 'KsaUiLanguages.dll' })
 if ($taskUnexpectedDlls.Count) { throw 'Game or loader DLLs must not be distributed.' }
-$taskBinaryZip = Join-Path $taskDist ("KsaUiLanguages-$taskVersion-build5541.zip")
+$taskBinaryZip = Join-Path $taskDist ("KsaUiLanguages-$taskVersion-build5541-5554.zip")
 Compress-Archive -LiteralPath $taskMod -DestinationPath $taskBinaryZip -Force
 $taskArchives = @($taskBinaryZip)
 if ($IncludeSource) {

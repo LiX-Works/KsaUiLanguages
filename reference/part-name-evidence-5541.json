@@ -21,7 +21,39 @@
     "CoreFuelTankA_Prefab_MP1W1HA": "1 米推进剂箱 MP1W1HA",
     "CoreFuelTankB_Prefab_BaypartTankA": "球形推进剂箱 A",
     "CoreFuelTankB_Prefab_BaypartTankC": "球形推进剂箱 C",
-    "CorePropulsionA_Prefab_EngineA2": "LR91 海平面型发动机 A2"
+    "CorePropulsionA_Prefab_EngineA2": "LR91 海平面型发动机 A2",
+    "CoreFuelTankA_Prefab_LF1W1HB": "1 米推进剂箱 LF1W1HB",
+    "CoreFuelTankA_Prefab_LF1W1HC": "1 米推进剂箱 LF1W1HC",
+    "CoreFuelTankA_Prefab_LF1WHalfHA": "1 米短型推进剂箱 LF1WHalfHA",
+    "CoreFuelTankA_Prefab_LF1WHalfHB": "1 米短型推进剂箱 LF1WHalfHB",
+    "CoreFuelTankA_Prefab_LF1WHalfHC": "1 米短型推进剂箱 LF1WHalfHC",
+    "CoreFuelTankA_Prefab_LF2W1HA": "2 米推进剂箱 LF2W1HA",
+    "CoreFuelTankA_Prefab_LF2W1HB": "2 米推进剂箱 LF2W1HB",
+    "CoreFuelTankA_Prefab_LF2W2HA": "2 米推进剂箱 LF2W2HA",
+    "CoreFuelTankA_Prefab_LF2W2HB": "2 米推进剂箱 LF2W2HB",
+    "CoreFuelTankA_Prefab_LF2W2HC": "2 米推进剂箱 LF2W2HC",
+    "CoreFuelTankA_Prefab_LF2W4HA": "2 米推进剂箱 LF2W4HA",
+    "CoreFuelTankA_Prefab_LF2W4HB": "2 米推进剂箱 LF2W4HB",
+    "CoreFuelTankA_Prefab_LF2W4HC": "2 米推进剂箱 LF2W4HC",
+    "CoreFuelTankA_Prefab_LF2W4HD": "2 米推进剂箱 LF2W4HD",
+    "CoreFuelTankA_Prefab_LF3W3HA": "3 米推进剂箱 LF3W3HA",
+    "CoreFuelTankA_Prefab_LF3W3HB": "3 米推进剂箱 LF3W3HB",
+    "CoreFuelTankA_Prefab_LF3W6HA": "3 米推进剂箱 LF3W6HA",
+    "CoreFuelTankA_Prefab_LF3W6HB": "3 米推进剂箱 LF3W6HB",
+    "CoreFuelTankA_Prefab_LF3W6HC": "3 米推进剂箱 LF3W6HC",
+    "CoreFuelTankA_Prefab_LF3W6HD": "3 米推进剂箱 LF3W6HD",
+    "CoreFuelTankA_Prefab_MP1W1HB": "1 米推进剂箱 MP1W1HB",
+    "CoreFuelTankA_Prefab_MP1W1HC": "1 米推进剂箱 MP1W1HC",
+    "CoreFuelTankA_Prefab_MP1W1HD": "1 米推进剂箱 MP1W1HD",
+    "CoreFuelTankA_Prefab_MP1WHalfHA": "1 米短型推进剂箱 MP1WHalfHA",
+    "CoreFuelTankA_Prefab_MP1WHalfHB": "1 米短型推进剂箱 MP1WHalfHB",
+    "CoreFuelTankA_Prefab_MP1WHalfHC": "1 米短型推进剂箱 MP1WHalfHC",
+    "CoreFuelTankA_Prefab_MP1WHalfHD": "1 米短型推进剂箱 MP1WHalfHD",
+    "CoreFuelTankA_Prefab_RadialMPHalfWA": "球形推进剂箱 RadialMPHalfWA",
+    "CoreFuelTankA_Prefab_RadialMPHalfWB": "球形推进剂箱 RadialMPHalfWB",
+    "CoreFuelTankA_Prefab_RadialMPQuarterWA": "球形推进剂箱 RadialMPQuarterWA",
+    "CoreFuelTankB_Prefab_BaypartTankB": "圆柱形推进剂箱 BaypartTankB",
+    "CoreFuelTankB_Prefab_BaypartTankD": "双圆柱形推进剂箱 BaypartTankD"
   },
   "evidence": [
     {
@@ -148,33 +180,73 @@
       "id": "CoreFuelTankA_Prefab_LF1W1HA",
       "name": "1 米推进剂箱 LF1W1HA",
       "source": "Content/Core/CoreFuelTankAAssets.xml; Content/Core/CoreFuelTankAGameData.xml",
-      "reason": "PartGameData 标注 Fuel Tanks，Diameter=1 m；未设 DisplayName。保留 LF1W1HA 型号，不展开未核实的缩写。",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 1 个 CylindricalTank 储箱模块。名称中的 1 米来自原版 Diameter M=1（直径），不是从型号 W 推断。不展开 LF，也不指定推进剂种类。 型号 LF1W1HA 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。 中文显示名保持本轮已有译名。",
       "confidence": "high",
-      "name_basis": "independent_functional_name"
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankAAssets.xml",
+          "line": 308
+        },
+        {
+          "file": "Content/Core/CoreFuelTankAGameData.xml",
+          "line": 3
+        }
+      ]
     },
     {
       "id": "CoreFuelTankA_Prefab_MP1W1HA",
       "name": "1 米推进剂箱 MP1W1HA",
       "source": "Content/Core/CoreFuelTankAAssets.xml; Content/Core/CoreFuelTankAGameData.xml",
-      "reason": "PartGameData 标注 Fuel Tanks，Diameter=1 m，含多个储箱模块；未设 DisplayName。保留 MP1W1HA 型号，不展开未核实的缩写。",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 4 个 CylindricalTank 储箱模块。名称中的 1 米来自原版 Diameter M=1（直径），不是从型号 W 推断。RoleAffinity=Thruster 是原版模块用途关联，不据此展开 MP 或指定推进剂种类。 型号 MP1W1HA 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。 中文显示名保持本轮已有译名。",
       "confidence": "high",
-      "name_basis": "independent_functional_name"
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankAAssets.xml",
+          "line": 1136
+        },
+        {
+          "file": "Content/Core/CoreFuelTankAGameData.xml",
+          "line": 957
+        }
+      ]
     },
     {
       "id": "CoreFuelTankB_Prefab_BaypartTankA",
       "name": "球形推进剂箱 A",
       "source": "Content/Core/CoreFuelTankBAssets.xml; Content/Core/CoreFuelTankBGameData.xml",
-      "reason": "Fuel Tanks 标签，含一个球形储箱模块；没有货舱功能证据，采用结构特征保守拟名。",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 1 个 SphericalTank 储箱模块。没有 Diameter 字段；中文名称不添加尺寸单位。RoleAffinity=Thruster 是原版模块用途关联，不据此展开 MP 或指定推进剂种类。 型号 BaypartTankA 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。 Baypart 没有独立货舱功能证据，不译成货舱。 中文显示名保持本轮已有译名。",
       "confidence": "high",
-      "name_basis": "independent_functional_name"
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankBAssets.xml",
+          "line": 211
+        },
+        {
+          "file": "Content/Core/CoreFuelTankBGameData.xml",
+          "line": 3
+        }
+      ]
     },
     {
       "id": "CoreFuelTankB_Prefab_BaypartTankC",
       "name": "球形推进剂箱 C",
       "source": "Content/Core/CoreFuelTankBAssets.xml; Content/Core/CoreFuelTankBGameData.xml",
-      "reason": "Fuel Tanks 标签，含两个球形储箱模块；没有货舱功能证据，采用结构特征保守拟名。",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 2 个 SphericalTank 储箱模块。没有 Diameter 字段；中文名称不添加尺寸单位。RoleAffinity=Thruster 是原版模块用途关联，不据此展开 MP 或指定推进剂种类。 型号 BaypartTankC 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。 Baypart 没有独立货舱功能证据，不译成货舱。 中文显示名保持本轮已有译名。",
       "confidence": "high",
-      "name_basis": "independent_functional_name"
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankBAssets.xml",
+          "line": 319
+        },
+        {
+          "file": "Content/Core/CoreFuelTankBGameData.xml",
+          "line": 42
+        }
+      ]
     },
     {
       "id": "CorePropulsionA_Prefab_EngineA2",
@@ -183,6 +255,582 @@
       "reason": "该项明确有 DisplayName=LR91 Sea，EditorTag=Engines、Diameter=1 m。此映射翻译现有英文名，并用 A2 保留部件变体。",
       "confidence": "medium",
       "name_basis": "existing_english_name_translation"
+    },
+    {
+      "id": "CoreFuelTankA_Prefab_LF1W1HB",
+      "name": "1 米推进剂箱 LF1W1HB",
+      "source": "Content/Core/CoreFuelTankAAssets.xml; Content/Core/CoreFuelTankAGameData.xml",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 1 个 CylindricalTank 储箱模块。名称中的 1 米来自原版 Diameter M=1（直径），不是从型号 W 推断。不展开 LF，也不指定推进剂种类。 型号 LF1W1HB 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankAAssets.xml",
+          "line": 333
+        },
+        {
+          "file": "Content/Core/CoreFuelTankAGameData.xml",
+          "line": 34
+        }
+      ]
+    },
+    {
+      "id": "CoreFuelTankA_Prefab_LF1W1HC",
+      "name": "1 米推进剂箱 LF1W1HC",
+      "source": "Content/Core/CoreFuelTankAAssets.xml; Content/Core/CoreFuelTankAGameData.xml",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 1 个 CylindricalTank 储箱模块。名称中的 1 米来自原版 Diameter M=1（直径），不是从型号 W 推断。不展开 LF，也不指定推进剂种类。 型号 LF1W1HC 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankAAssets.xml",
+          "line": 358
+        },
+        {
+          "file": "Content/Core/CoreFuelTankAGameData.xml",
+          "line": 65
+        }
+      ]
+    },
+    {
+      "id": "CoreFuelTankA_Prefab_LF1WHalfHA",
+      "name": "1 米短型推进剂箱 LF1WHalfHA",
+      "source": "Content/Core/CoreFuelTankAAssets.xml; Content/Core/CoreFuelTankAGameData.xml",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 1 个 CylindricalTank 储箱模块。名称中的 1 米来自原版 Diameter M=1（直径），不是从型号 W 推断。短型依据 CylindricalTank Length M=0.5，相邻 1W1H 型号 Length M=1；不是把整件外形高度精确标成 0.5 米。不展开 LF，也不指定推进剂种类。 型号 LF1WHalfHA 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankAAssets.xml",
+          "line": 383
+        },
+        {
+          "file": "Content/Core/CoreFuelTankAGameData.xml",
+          "line": 96
+        }
+      ]
+    },
+    {
+      "id": "CoreFuelTankA_Prefab_LF1WHalfHB",
+      "name": "1 米短型推进剂箱 LF1WHalfHB",
+      "source": "Content/Core/CoreFuelTankAAssets.xml; Content/Core/CoreFuelTankAGameData.xml",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 1 个 CylindricalTank 储箱模块。名称中的 1 米来自原版 Diameter M=1（直径），不是从型号 W 推断。短型依据 CylindricalTank Length M=0.5，相邻 1W1H 型号 Length M=1；不是把整件外形高度精确标成 0.5 米。不展开 LF，也不指定推进剂种类。 型号 LF1WHalfHB 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankAAssets.xml",
+          "line": 408
+        },
+        {
+          "file": "Content/Core/CoreFuelTankAGameData.xml",
+          "line": 127
+        }
+      ]
+    },
+    {
+      "id": "CoreFuelTankA_Prefab_LF1WHalfHC",
+      "name": "1 米短型推进剂箱 LF1WHalfHC",
+      "source": "Content/Core/CoreFuelTankAAssets.xml; Content/Core/CoreFuelTankAGameData.xml",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 1 个 CylindricalTank 储箱模块。名称中的 1 米来自原版 Diameter M=1（直径），不是从型号 W 推断。短型依据 CylindricalTank Length M=0.5，相邻 1W1H 型号 Length M=1；不是把整件外形高度精确标成 0.5 米。不展开 LF，也不指定推进剂种类。 型号 LF1WHalfHC 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankAAssets.xml",
+          "line": 433
+        },
+        {
+          "file": "Content/Core/CoreFuelTankAGameData.xml",
+          "line": 158
+        }
+      ]
+    },
+    {
+      "id": "CoreFuelTankA_Prefab_LF2W1HA",
+      "name": "2 米推进剂箱 LF2W1HA",
+      "source": "Content/Core/CoreFuelTankAAssets.xml; Content/Core/CoreFuelTankAGameData.xml",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 1 个 CylindricalTank 储箱模块。名称中的 2 米来自原版 Diameter M=2（直径），不是从型号 W 推断。不展开 LF，也不指定推进剂种类。 型号 LF2W1HA 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankAAssets.xml",
+          "line": 458
+        },
+        {
+          "file": "Content/Core/CoreFuelTankAGameData.xml",
+          "line": 189
+        }
+      ]
+    },
+    {
+      "id": "CoreFuelTankA_Prefab_LF2W1HB",
+      "name": "2 米推进剂箱 LF2W1HB",
+      "source": "Content/Core/CoreFuelTankAAssets.xml; Content/Core/CoreFuelTankAGameData.xml",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 1 个 CylindricalTank 储箱模块。名称中的 2 米来自原版 Diameter M=2（直径），不是从型号 W 推断。不展开 LF，也不指定推进剂种类。 型号 LF2W1HB 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankAAssets.xml",
+          "line": 496
+        },
+        {
+          "file": "Content/Core/CoreFuelTankAGameData.xml",
+          "line": 237
+        }
+      ]
+    },
+    {
+      "id": "CoreFuelTankA_Prefab_LF2W2HA",
+      "name": "2 米推进剂箱 LF2W2HA",
+      "source": "Content/Core/CoreFuelTankAAssets.xml; Content/Core/CoreFuelTankAGameData.xml",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 1 个 CylindricalTank 储箱模块。名称中的 2 米来自原版 Diameter M=2（直径），不是从型号 W 推断。不展开 LF，也不指定推进剂种类。 型号 LF2W2HA 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankAAssets.xml",
+          "line": 534
+        },
+        {
+          "file": "Content/Core/CoreFuelTankAGameData.xml",
+          "line": 285
+        }
+      ]
+    },
+    {
+      "id": "CoreFuelTankA_Prefab_LF2W2HB",
+      "name": "2 米推进剂箱 LF2W2HB",
+      "source": "Content/Core/CoreFuelTankAAssets.xml; Content/Core/CoreFuelTankAGameData.xml",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 1 个 CylindricalTank 储箱模块。名称中的 2 米来自原版 Diameter M=2（直径），不是从型号 W 推断。不展开 LF，也不指定推进剂种类。 型号 LF2W2HB 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankAAssets.xml",
+          "line": 572
+        },
+        {
+          "file": "Content/Core/CoreFuelTankAGameData.xml",
+          "line": 333
+        }
+      ]
+    },
+    {
+      "id": "CoreFuelTankA_Prefab_LF2W2HC",
+      "name": "2 米推进剂箱 LF2W2HC",
+      "source": "Content/Core/CoreFuelTankAAssets.xml; Content/Core/CoreFuelTankAGameData.xml",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 1 个 CylindricalTank 储箱模块。名称中的 2 米来自原版 Diameter M=2（直径），不是从型号 W 推断。不展开 LF，也不指定推进剂种类。 型号 LF2W2HC 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankAAssets.xml",
+          "line": 610
+        },
+        {
+          "file": "Content/Core/CoreFuelTankAGameData.xml",
+          "line": 381
+        }
+      ]
+    },
+    {
+      "id": "CoreFuelTankA_Prefab_LF2W4HA",
+      "name": "2 米推进剂箱 LF2W4HA",
+      "source": "Content/Core/CoreFuelTankAAssets.xml; Content/Core/CoreFuelTankAGameData.xml",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 1 个 CylindricalTank 储箱模块。名称中的 2 米来自原版 Diameter M=2（直径），不是从型号 W 推断。不展开 LF，也不指定推进剂种类。 型号 LF2W4HA 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankAAssets.xml",
+          "line": 648
+        },
+        {
+          "file": "Content/Core/CoreFuelTankAGameData.xml",
+          "line": 429
+        }
+      ]
+    },
+    {
+      "id": "CoreFuelTankA_Prefab_LF2W4HB",
+      "name": "2 米推进剂箱 LF2W4HB",
+      "source": "Content/Core/CoreFuelTankAAssets.xml; Content/Core/CoreFuelTankAGameData.xml",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 1 个 CylindricalTank 储箱模块。名称中的 2 米来自原版 Diameter M=2（直径），不是从型号 W 推断。不展开 LF，也不指定推进剂种类。 型号 LF2W4HB 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankAAssets.xml",
+          "line": 686
+        },
+        {
+          "file": "Content/Core/CoreFuelTankAGameData.xml",
+          "line": 477
+        }
+      ]
+    },
+    {
+      "id": "CoreFuelTankA_Prefab_LF2W4HC",
+      "name": "2 米推进剂箱 LF2W4HC",
+      "source": "Content/Core/CoreFuelTankAAssets.xml; Content/Core/CoreFuelTankAGameData.xml",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 1 个 CylindricalTank 储箱模块。名称中的 2 米来自原版 Diameter M=2（直径），不是从型号 W 推断。不展开 LF，也不指定推进剂种类。 型号 LF2W4HC 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankAAssets.xml",
+          "line": 724
+        },
+        {
+          "file": "Content/Core/CoreFuelTankAGameData.xml",
+          "line": 525
+        }
+      ]
+    },
+    {
+      "id": "CoreFuelTankA_Prefab_LF2W4HD",
+      "name": "2 米推进剂箱 LF2W4HD",
+      "source": "Content/Core/CoreFuelTankAAssets.xml; Content/Core/CoreFuelTankAGameData.xml",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 1 个 CylindricalTank 储箱模块。名称中的 2 米来自原版 Diameter M=2（直径），不是从型号 W 推断。不展开 LF，也不指定推进剂种类。 型号 LF2W4HD 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankAAssets.xml",
+          "line": 762
+        },
+        {
+          "file": "Content/Core/CoreFuelTankAGameData.xml",
+          "line": 573
+        }
+      ]
+    },
+    {
+      "id": "CoreFuelTankA_Prefab_LF3W3HA",
+      "name": "3 米推进剂箱 LF3W3HA",
+      "source": "Content/Core/CoreFuelTankAAssets.xml; Content/Core/CoreFuelTankAGameData.xml",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 1 个 CylindricalTank 储箱模块。名称中的 3 米来自原版 Diameter M=3（直径），不是从型号 W 推断。不展开 LF，也不指定推进剂种类。 型号 LF3W3HA 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankAAssets.xml",
+          "line": 800
+        },
+        {
+          "file": "Content/Core/CoreFuelTankAGameData.xml",
+          "line": 621
+        }
+      ]
+    },
+    {
+      "id": "CoreFuelTankA_Prefab_LF3W3HB",
+      "name": "3 米推进剂箱 LF3W3HB",
+      "source": "Content/Core/CoreFuelTankAAssets.xml; Content/Core/CoreFuelTankAGameData.xml",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 1 个 CylindricalTank 储箱模块。名称中的 3 米来自原版 Diameter M=3（直径），不是从型号 W 推断。不展开 LF，也不指定推进剂种类。 型号 LF3W3HB 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankAAssets.xml",
+          "line": 840
+        },
+        {
+          "file": "Content/Core/CoreFuelTankAGameData.xml",
+          "line": 669
+        }
+      ]
+    },
+    {
+      "id": "CoreFuelTankA_Prefab_LF3W6HA",
+      "name": "3 米推进剂箱 LF3W6HA",
+      "source": "Content/Core/CoreFuelTankAAssets.xml; Content/Core/CoreFuelTankAGameData.xml",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 1 个 CylindricalTank 储箱模块。名称中的 3 米来自原版 Diameter M=3（直径），不是从型号 W 推断。不展开 LF，也不指定推进剂种类。 型号 LF3W6HA 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankAAssets.xml",
+          "line": 880
+        },
+        {
+          "file": "Content/Core/CoreFuelTankAGameData.xml",
+          "line": 717
+        }
+      ]
+    },
+    {
+      "id": "CoreFuelTankA_Prefab_LF3W6HB",
+      "name": "3 米推进剂箱 LF3W6HB",
+      "source": "Content/Core/CoreFuelTankAAssets.xml; Content/Core/CoreFuelTankAGameData.xml",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 1 个 CylindricalTank 储箱模块。名称中的 3 米来自原版 Diameter M=3（直径），不是从型号 W 推断。不展开 LF，也不指定推进剂种类。 型号 LF3W6HB 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankAAssets.xml",
+          "line": 982
+        },
+        {
+          "file": "Content/Core/CoreFuelTankAGameData.xml",
+          "line": 813
+        }
+      ]
+    },
+    {
+      "id": "CoreFuelTankA_Prefab_LF3W6HC",
+      "name": "3 米推进剂箱 LF3W6HC",
+      "source": "Content/Core/CoreFuelTankAAssets.xml; Content/Core/CoreFuelTankAGameData.xml",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 1 个 CylindricalTank 储箱模块。名称中的 3 米来自原版 Diameter M=3（直径），不是从型号 W 推断。不展开 LF，也不指定推进剂种类。 型号 LF3W6HC 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankAAssets.xml",
+          "line": 1033
+        },
+        {
+          "file": "Content/Core/CoreFuelTankAGameData.xml",
+          "line": 861
+        }
+      ]
+    },
+    {
+      "id": "CoreFuelTankA_Prefab_LF3W6HD",
+      "name": "3 米推进剂箱 LF3W6HD",
+      "source": "Content/Core/CoreFuelTankAAssets.xml; Content/Core/CoreFuelTankAGameData.xml",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 1 个 CylindricalTank 储箱模块。名称中的 3 米来自原版 Diameter M=3（直径），不是从型号 W 推断。不展开 LF，也不指定推进剂种类。 型号 LF3W6HD 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankAAssets.xml",
+          "line": 1084
+        },
+        {
+          "file": "Content/Core/CoreFuelTankAGameData.xml",
+          "line": 909
+        }
+      ]
+    },
+    {
+      "id": "CoreFuelTankA_Prefab_MP1W1HB",
+      "name": "1 米推进剂箱 MP1W1HB",
+      "source": "Content/Core/CoreFuelTankAAssets.xml; Content/Core/CoreFuelTankAGameData.xml",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 4 个 CylindricalTank 储箱模块。名称中的 1 米来自原版 Diameter M=1（直径），不是从型号 W 推断。RoleAffinity=Thruster 是原版模块用途关联，不据此展开 MP 或指定推进剂种类。 型号 MP1W1HB 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankAAssets.xml",
+          "line": 1161
+        },
+        {
+          "file": "Content/Core/CoreFuelTankAGameData.xml",
+          "line": 1023
+        }
+      ]
+    },
+    {
+      "id": "CoreFuelTankA_Prefab_MP1W1HC",
+      "name": "1 米推进剂箱 MP1W1HC",
+      "source": "Content/Core/CoreFuelTankAAssets.xml; Content/Core/CoreFuelTankAGameData.xml",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 4 个 CylindricalTank 储箱模块。名称中的 1 米来自原版 Diameter M=1（直径），不是从型号 W 推断。RoleAffinity=Thruster 是原版模块用途关联，不据此展开 MP 或指定推进剂种类。 型号 MP1W1HC 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankAAssets.xml",
+          "line": 1186
+        },
+        {
+          "file": "Content/Core/CoreFuelTankAGameData.xml",
+          "line": 1089
+        }
+      ]
+    },
+    {
+      "id": "CoreFuelTankA_Prefab_MP1W1HD",
+      "name": "1 米推进剂箱 MP1W1HD",
+      "source": "Content/Core/CoreFuelTankAAssets.xml; Content/Core/CoreFuelTankAGameData.xml",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 4 个 CylindricalTank 储箱模块。名称中的 1 米来自原版 Diameter M=1（直径），不是从型号 W 推断。RoleAffinity=Thruster 是原版模块用途关联，不据此展开 MP 或指定推进剂种类。 型号 MP1W1HD 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankAAssets.xml",
+          "line": 1211
+        },
+        {
+          "file": "Content/Core/CoreFuelTankAGameData.xml",
+          "line": 1155
+        }
+      ]
+    },
+    {
+      "id": "CoreFuelTankA_Prefab_MP1WHalfHA",
+      "name": "1 米短型推进剂箱 MP1WHalfHA",
+      "source": "Content/Core/CoreFuelTankAAssets.xml; Content/Core/CoreFuelTankAGameData.xml",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 4 个 CylindricalTank 储箱模块。名称中的 1 米来自原版 Diameter M=1（直径），不是从型号 W 推断。短型依据 CylindricalTank Length M=0.5，相邻 1W1H 型号 Length M=1；不是把整件外形高度精确标成 0.5 米。RoleAffinity=Thruster 是原版模块用途关联，不据此展开 MP 或指定推进剂种类。 型号 MP1WHalfHA 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankAAssets.xml",
+          "line": 1225
+        },
+        {
+          "file": "Content/Core/CoreFuelTankAGameData.xml",
+          "line": 1221
+        }
+      ]
+    },
+    {
+      "id": "CoreFuelTankA_Prefab_MP1WHalfHB",
+      "name": "1 米短型推进剂箱 MP1WHalfHB",
+      "source": "Content/Core/CoreFuelTankAAssets.xml; Content/Core/CoreFuelTankAGameData.xml",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 4 个 CylindricalTank 储箱模块。名称中的 1 米来自原版 Diameter M=1（直径），不是从型号 W 推断。短型依据 CylindricalTank Length M=0.5，相邻 1W1H 型号 Length M=1；不是把整件外形高度精确标成 0.5 米。RoleAffinity=Thruster 是原版模块用途关联，不据此展开 MP 或指定推进剂种类。 型号 MP1WHalfHB 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankAAssets.xml",
+          "line": 1250
+        },
+        {
+          "file": "Content/Core/CoreFuelTankAGameData.xml",
+          "line": 1287
+        }
+      ]
+    },
+    {
+      "id": "CoreFuelTankA_Prefab_MP1WHalfHC",
+      "name": "1 米短型推进剂箱 MP1WHalfHC",
+      "source": "Content/Core/CoreFuelTankAAssets.xml; Content/Core/CoreFuelTankAGameData.xml",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 4 个 CylindricalTank 储箱模块。名称中的 1 米来自原版 Diameter M=1（直径），不是从型号 W 推断。短型依据 CylindricalTank Length M=0.5，相邻 1W1H 型号 Length M=1；不是把整件外形高度精确标成 0.5 米。RoleAffinity=Thruster 是原版模块用途关联，不据此展开 MP 或指定推进剂种类。 型号 MP1WHalfHC 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankAAssets.xml",
+          "line": 1275
+        },
+        {
+          "file": "Content/Core/CoreFuelTankAGameData.xml",
+          "line": 1353
+        }
+      ]
+    },
+    {
+      "id": "CoreFuelTankA_Prefab_MP1WHalfHD",
+      "name": "1 米短型推进剂箱 MP1WHalfHD",
+      "source": "Content/Core/CoreFuelTankAAssets.xml; Content/Core/CoreFuelTankAGameData.xml",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 4 个 CylindricalTank 储箱模块。名称中的 1 米来自原版 Diameter M=1（直径），不是从型号 W 推断。短型依据 CylindricalTank Length M=0.5，相邻 1W1H 型号 Length M=1；不是把整件外形高度精确标成 0.5 米。RoleAffinity=Thruster 是原版模块用途关联，不据此展开 MP 或指定推进剂种类。 型号 MP1WHalfHD 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankAAssets.xml",
+          "line": 1300
+        },
+        {
+          "file": "Content/Core/CoreFuelTankAGameData.xml",
+          "line": 1419
+        }
+      ]
+    },
+    {
+      "id": "CoreFuelTankA_Prefab_RadialMPHalfWA",
+      "name": "球形推进剂箱 RadialMPHalfWA",
+      "source": "Content/Core/CoreFuelTankAAssets.xml; Content/Core/CoreFuelTankAGameData.xml",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 1 个 SphericalTank 储箱模块。没有 Diameter 字段；中文名称不添加尺寸单位。RoleAffinity=Thruster 是原版模块用途关联，不据此展开 MP 或指定推进剂种类。 型号 RadialMPHalfWA 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankAAssets.xml",
+          "line": 1314
+        },
+        {
+          "file": "Content/Core/CoreFuelTankAGameData.xml",
+          "line": 1485
+        }
+      ]
+    },
+    {
+      "id": "CoreFuelTankA_Prefab_RadialMPHalfWB",
+      "name": "球形推进剂箱 RadialMPHalfWB",
+      "source": "Content/Core/CoreFuelTankAAssets.xml; Content/Core/CoreFuelTankAGameData.xml",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 1 个 SphericalTank 储箱模块。没有 Diameter 字段；中文名称不添加尺寸单位。RoleAffinity=Thruster 是原版模块用途关联，不据此展开 MP 或指定推进剂种类。 型号 RadialMPHalfWB 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankAAssets.xml",
+          "line": 1317
+        },
+        {
+          "file": "Content/Core/CoreFuelTankAGameData.xml",
+          "line": 1514
+        }
+      ]
+    },
+    {
+      "id": "CoreFuelTankA_Prefab_RadialMPQuarterWA",
+      "name": "球形推进剂箱 RadialMPQuarterWA",
+      "source": "Content/Core/CoreFuelTankAAssets.xml; Content/Core/CoreFuelTankAGameData.xml",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 1 个 SphericalTank 储箱模块。没有 Diameter 字段；中文名称不添加尺寸单位。RoleAffinity=Thruster 是原版模块用途关联，不据此展开 MP 或指定推进剂种类。 型号 RadialMPQuarterWA 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankAAssets.xml",
+          "line": 1320
+        },
+        {
+          "file": "Content/Core/CoreFuelTankAGameData.xml",
+          "line": 1543
+        }
+      ]
+    },
+    {
+      "id": "CoreFuelTankB_Prefab_BaypartTankB",
+      "name": "圆柱形推进剂箱 BaypartTankB",
+      "source": "Content/Core/CoreFuelTankBAssets.xml; Content/Core/CoreFuelTankBGameData.xml",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 1 个 CylindricalTank 储箱模块。没有 Diameter 字段；中文名称不添加尺寸单位。RoleAffinity=Thruster 是原版模块用途关联，不据此展开 MP 或指定推进剂种类。 型号 BaypartTankB 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。 Baypart 没有独立货舱功能证据，不译成货舱。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankBAssets.xml",
+          "line": 252
+        },
+        {
+          "file": "Content/Core/CoreFuelTankBGameData.xml",
+          "line": 22
+        }
+      ]
+    },
+    {
+      "id": "CoreFuelTankB_Prefab_BaypartTankD",
+      "name": "双圆柱形推进剂箱 BaypartTankD",
+      "source": "Content/Core/CoreFuelTankBAssets.xml; Content/Core/CoreFuelTankBGameData.xml",
+      "reason": "飞船编辑器 → 推进剂箱分类的提示卡/属性窗口标题。包含 2 个 CylindricalTank 储箱模块。没有 Diameter 字段；中文名称不添加尺寸单位。RoleAffinity=Thruster 是原版模块用途关联，不据此展开 MP 或指定推进剂种类。 型号 BaypartTankD 保留，原版两个 XML 未设 DisplayName；这是独立功能拟名。储箱 OuterRadius 与注释中的 true geometric radius 不同，不将仿真 OuterRadius 作为外形直径。 Baypart 没有独立货舱功能证据，不译成货舱。",
+      "confidence": "high",
+      "name_basis": "independent_functional_name",
+      "source_locations": [
+        {
+          "file": "Content/Core/CoreFuelTankBAssets.xml",
+          "line": 377
+        },
+        {
+          "file": "Content/Core/CoreFuelTankBGameData.xml",
+          "line": 72
+        }
+      ]
     }
   ],
   "review_note": "技术数据核对和中文表达复核分开完成；名称不表示官方译名，尺寸来自 Diameter。"

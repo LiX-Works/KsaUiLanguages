@@ -4,6 +4,18 @@ $taskProject = Split-Path $PSScriptRoot -Parent
 if (!$DependencyDir) { $DependencyDir = Join-Path $taskProject 'work\installer-deps' }
 $taskSource = Join-Path $taskProject 'installer'
 $taskMetadata = Get-Content -Raw -LiteralPath (Join-Path $taskSource 'dependencies.json') | ConvertFrom-Json
+. (Join-Path $taskSource 'Common.ps1')
+$null = Get-TaskPackageGameVersions -Package $taskMetadata
+$taskPluginEntries = @($taskMetadata.archives | Where-Object { $_.name -eq 'plugin.zip' })
+if ($taskPluginEntries.Count -ne 1) { throw 'Exactly one plugin payload is required.' }
+$taskPluginArchive = $taskPluginEntries[0]
+$taskPluginSource = [uri]$taskPluginArchive.source
+$taskPluginFileName = [IO.Path]::GetFileName($taskPluginSource.AbsolutePath)
+if ($taskPluginSource.Scheme -ne 'https' -or $taskPluginFileName -notmatch '^[A-Za-z0-9][A-Za-z0-9._-]*\.zip$' -or
+    $taskPluginFileName.Contains('..') -or $taskPluginSource.Query -or $taskPluginSource.Fragment) { throw 'Invalid plugin source filename.' }
+$taskLocalPlugin = Join-Path $taskProject ('dist\' + $taskPluginFileName)
+if (!(Test-Path -LiteralPath $taskLocalPlugin -PathType Leaf)) { throw "Package the plugin locally first: $taskLocalPlugin. The installer builder does not download the plugin." }
+if ((Get-FileHash -LiteralPath $taskLocalPlugin -Algorithm SHA256).Hash.ToLowerInvariant() -ne $taskPluginArchive.sha256) { throw 'Local plugin SHA256 differs from dependencies.json; update metadata after packaging.' }
 $taskDist = Join-Path $taskProject 'dist'
 $taskStage = Join-Path $taskDist ('installer-stage-' + [guid]::NewGuid().ToString('N'))
 $taskPackage = Join-Path $taskStage 'KsaUiLanguages-Installer'
@@ -11,11 +23,7 @@ New-Item -ItemType Directory -Path $DependencyDir,(Join-Path $taskPackage 'paylo
 foreach ($taskArchive in $taskMetadata.archives) {
     $taskCached = Join-Path $DependencyDir $taskArchive.name
     if ($taskArchive.name -eq 'plugin.zip') {
-        $taskLocalPlugin = Join-Path $taskProject ("dist\KsaUiLanguages-$($taskMetadata.pluginVersion)-build5541.zip")
-        if ((Test-Path -LiteralPath $taskLocalPlugin) -and
-            (Get-FileHash -LiteralPath $taskLocalPlugin -Algorithm SHA256).Hash.ToLowerInvariant() -eq $taskArchive.sha256) {
-            Copy-Item -LiteralPath $taskLocalPlugin -Destination $taskCached -Force
-        }
+        Copy-Item -LiteralPath $taskLocalPlugin -Destination $taskCached -Force
     }
     $taskValid = (Test-Path -LiteralPath $taskCached) -and
         ((Get-FileHash -LiteralPath $taskCached -Algorithm SHA256).Hash.ToLowerInvariant() -eq $taskArchive.sha256)
@@ -54,5 +62,5 @@ $taskChecksum = (Get-FileHash -LiteralPath $taskZip -Algorithm SHA256).Hash.ToLo
 [IO.File]::WriteAllText((Join-Path $taskDist 'INSTALLER-SHA256.txt'), $taskChecksum + [Environment]::NewLine, [Text.UTF8Encoding]::new($false))
 $taskResult = [pscustomobject]@{zip=$taskZip;packageDirectory=$taskPackage;bytes=(Get-Item -LiteralPath $taskZip).Length;sha256=(Get-FileHash -LiteralPath $taskZip -Algorithm SHA256).Hash.ToLowerInvariant()}
 New-Item -ItemType Directory -Path (Join-Path $taskProject 'work\run-logs') -Force | Out-Null
-$taskResult | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $taskProject 'work\run-logs\latest-installer-package.json') -Encoding utf8
+$taskResult | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $taskProject 'work\run-logs\installer-v042-package.json') -Encoding utf8
 $taskResult | ConvertTo-Json

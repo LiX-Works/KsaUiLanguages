@@ -6,6 +6,7 @@
 !/tools/make_installer.ps1
 !/tools/check_installer.ps1
 !/tools/export_dictionary.py
+!/tools/check_compatibility.ps1
 /installer/payload/
 /installer/package.json
 /assets/NotoSansSC-variable.ttf

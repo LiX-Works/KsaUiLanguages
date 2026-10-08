@@ -17,6 +17,7 @@ public static class HudWindowTitlePatch
             || window.GetType().DeclaringType == typeof(VehicleSaves)
             || window.GetType().DeclaringType == typeof(UniverseManifest)
             || window.GetType().DeclaringType == typeof(ResourceGroupsPanel)
+            || window.GetType().DeclaringType == typeof(CrewAssignmentWindow)
             || window is GroundTrackWindow or TargetTrackWindow;
 
     public static string DisplayTitle(string original, ImGuiWindow window)

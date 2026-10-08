@@ -218,7 +218,7 @@ public static class PartContextFieldCaptionPatch
     // Compose each scoped lookup explicitly at the final display call. This
     // does not depend on which shared-helper transpiler runs first.
     public static ImString CombinedCaption(ImString label)
-        => FlightPlanCheckboxCaptionPatch.DisplayCaption(DisplayVariable(EditorFieldCaptionPatch.DisplayCaption(label)));
+        => FlightPlanCheckboxCaptionPatch.DisplayCaption(DeeperResourceCaptionPatch.GraphFieldCaption(DisplayVariable(EditorFieldCaptionPatch.DisplayCaption(label))));
     public static void NativeText(ImString label) => ImGui.Text(CombinedCaption(label));
 
     public static string FlowPreviewText(string source)

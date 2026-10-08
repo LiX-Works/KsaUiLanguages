@@ -44,6 +44,8 @@ public static class CommonPopupCaptionPatch
 
     public static void UpdateCheckbox(PopupCheckbox<UpdateAvailablePopup> widget, UpdateAvailablePopup parent, float width)
         =>DrawCheckbox(widget,parent,width);
+    public static void WelcomeCheckbox(PopupCheckbox<WelcomePopup> widget, WelcomePopup parent, float width)
+        =>DrawCheckbox(widget,parent,width);
 
     private static void DrawCheckbox<T>(PopupCheckbox<T> widget,T parent,float width) where T:Popup
     {

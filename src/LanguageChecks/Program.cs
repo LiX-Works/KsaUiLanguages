@@ -40,6 +40,10 @@ internal static class Program
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static void RunChecks()
     {
+        Require(KsaUiLanguages.LanguagePlugin.SupportsGameVersion("2026.10.7.5541")
+            && KsaUiLanguages.LanguagePlugin.SupportsGameVersion("2026.10.10.5554")
+            && !KsaUiLanguages.LanguagePlugin.SupportsGameVersion("2026.10.10.5555")
+            && !KsaUiLanguages.LanguagePlugin.SupportsGameVersion(null), "Only the two verified game builds pass the production version guard");
         var results = new List<string>();
         var harmony = new Harmony("org.ksa.uilanguages.headlesschecks");
         harmony.Patch(AccessTools.PropertyGetter(typeof(KSA.Constants), nameof(KSA.Constants.DocumentsFolderPath)),
@@ -200,6 +204,8 @@ internal static class Program
         CheckFlightAndPartContexts(results);
         CheckResourceAndTimeCaptions(results);
         CheckSaveAndManifestCaptions(results);
+        CheckFollowupCaptions(results);
+        CheckEditorStageAndTanks(results);
         KsaUiLanguages.Runtime.ApplyLanguage("en-US");
         Require(KsaUiLanguages.Runtime.PartName(capsuleTemplate) == capsuleId, "English restores the original part name");
         results.Add("PASS: Part-name English fallback");
@@ -254,7 +260,7 @@ internal static class Program
             Require(Harmony.GetAllPatchedMethods().Any(m => Harmony.GetPatchInfo(m)?.Owners.Contains(patchSmoke.Id) == true), "Plugin Harmony patches can be installed against the actual game");
             patchedDisplayMethods=Harmony.GetAllPatchedMethods().Where(m=>Harmony.GetPatchInfo(m)?.Owners.Contains(patchSmoke.Id)==true)
                 .Select(m=>m.DeclaringType?.FullName+"::"+m.Name+"("+string.Join(",",m.GetParameters().Select(p=>p.ParameterType.ToString()))+")").Order().ToArray();
-            results.Add("PASS: All plugin patches install against game build 5541");
+            results.Add("PASS: All plugin patches install against game build " + typeof(KSA.Constants).Assembly.GetName().Version);
         }
         finally
         {
@@ -449,7 +455,8 @@ internal static class Program
     {
         var contextWindowType = typeof(KSA.GaugeContextAssignmentWindow).GetNestedType("Window", BindingFlags.NonPublic)!;
         var contextWindow = (KSA.ImGuiWindow)RuntimeHelpers.GetUninitializedObject(contextWindowType);
-        var foreignWindowType = typeof(KSA.CrewAssignmentWindow).GetNestedType("Window", BindingFlags.NonPublic)!;
+        var foreignWindowType = typeof(KSA.ImGuiWindow).Assembly.GetTypes().First(t => !t.IsAbstract && !t.ContainsGenericParameters
+            && typeof(KSA.ImGuiWindow).IsAssignableFrom(t) && (t.FullName?.Contains("Tuning", StringComparison.Ordinal) ?? false));
         var foreignWindow = (KSA.ImGuiWindow)RuntimeHelpers.GetUninitializedObject(foreignWindowType);
         const string originalTitle = "Context Assignments###context-stable-window";
         string chineseTitle = KsaUiLanguages.HudWindowTitlePatch.DisplayTitle(originalTitle, contextWindow);
@@ -852,6 +859,131 @@ internal static class Program
             && KsaUiLanguages.HudSavePopupCaptionPatch.DisplayTitle("SAVE GAME")=="SAVE GAME", "Save confirmation and title restore exact English");
         KsaUiLanguages.Runtime.ApplyLanguage("zh-CN");
         results.Add("PASS: Save popup display scope, unchanged title field and native menu ID round trip");
+    }
+
+    private static KSA.ActionStringToken AssignmentFixture(KSA.InputAction action, string text)
+    {
+        var token=(KSA.ActionStringToken)RuntimeHelpers.GetUninitializedObject(typeof(KSA.ActionStringToken));
+        AccessTools.Field(typeof(KSA.ActionStringToken),nameof(KSA.ActionStringToken.Action)).SetValue(token,action);
+        AccessTools.Field(typeof(KSA.StringToken),"<Text>k__BackingField").SetValue(token,text);
+        return token;
+    }
+
+    private static void CheckFollowupCaptions(List<string> results)
+    {
+        var ctor=AccessTools.Constructor(typeof(KSA.WelcomePopup),Type.EmptyTypes);
+        string source=PatchProcessor.GetOriginalInstructions(ctor).Where(i=>i.opcode==System.Reflection.Emit.OpCodes.Ldstr)
+            .Select(i=>(string)i.operand).Single(s=>s.StartsWith("Welcome to the KSA pre-alpha.",StringComparison.Ordinal));
+        var actionTags=System.Text.RegularExpressions.Regex.Matches(source,@"<Action:(?<name>\w+)\s*/>");
+        var original=new List<KSA.PopupToken>();
+        int offset=0, index=0;
+        foreach(System.Text.RegularExpressions.Match match in actionTags)
+        {
+            original.AddRange(KSA.StringTokenParser.Parse(source[offset..match.Index]));
+            original.Add(AssignmentFixture(Enum.Parse<KSA.InputAction>(match.Groups["name"].Value),"CUSTOM-KEY-"+index++));
+            offset=match.Index+match.Length;
+        }
+        original.AddRange(KSA.StringTokenParser.Parse(source[offset..]));
+        var native=original.ToArray();
+        string translated=KsaUiLanguages.Runtime.UtilityText(source);
+        Require(translated!=source, "Actual welcome source has a translated rich-text record");
+        var display=KsaUiLanguages.WelcomeCaptionPatch.PrepareTokens(source,native,translated);
+        var nativeActions=native.OfType<KSA.ActionStringToken>().ToArray();
+        var displayActions=display.OfType<KSA.ActionStringToken>().ToArray();
+        Require(nativeActions.Length==9 && nativeActions.Zip(displayActions).All(p=>ReferenceEquals(p.First,p.Second)), "Welcome display reuses all nine actual keybinding card instances");
+        Require(displayActions.Select(t=>t.Text).SequenceEqual(nativeActions.Select(t=>t.Text)), "Custom binding text remains byte-exact");
+        string plain=string.Concat(display.Where(t=>t.GetType()==typeof(KSA.StringToken)).Select(t=>t.Text));
+        Require(plain==System.Text.RegularExpressions.Regex.Replace(translated,@"<[^>]*>",""), "Chinese token splitting preserves the entire visible text");
+        Require(display.Count(t=>t is KSA.NewLineToken)==native.Count(t=>t is KSA.NewLineToken)
+            && display.Count(t=>t is KSA.SeparatorToken)==native.Count(t=>t is KSA.SeparatorToken), "Welcome retains native paragraph/separator tokens");
+        Require(ReferenceEquals(KsaUiLanguages.WelcomeCaptionPatch.PrepareTokens(source,native,translated.Replace("<Action:VesselNext />","<Action:VesselPrevious />")),native), "Invalid welcome action markup falls back to original tokens");
+        Require(ReferenceEquals(KsaUiLanguages.WelcomeCaptionPatch.PrepareTokens(source,native,source),native), "English welcome returns its original token array");
+        Require(KsaUiLanguages.WelcomeCaptionPatch.SplitChineseText("欢迎，世界。").SequenceEqual(new[]{"欢","迎，","世","界。"})
+            && KsaUiLanguages.WelcomeCaptionPatch.SplitChineseText("“控制”").SequenceEqual(new[]{"“控","制”"})
+            && KsaUiLanguages.WelcomeCaptionPatch.SplitChineseText("Rocket-42").Single()=="Rocket-42", "Chinese wrap keeps punctuation attached and Latin identifiers intact");
+        results.Add("PASS: Welcome rich-text, original hotkey cards and Chinese wrap segments");
+
+        var loadingMethod=AccessTools.Method(typeof(KSA.Loading),nameof(KSA.Loading.DrawUi));
+        var loadingIL=KsaUiLanguages.LoadingCaptionPatch.Translate(PatchProcessor.GetOriginalInstructions(loadingMethod).Select(i=>new CodeInstruction(i))).ToList();
+        Require(!loadingIL.Any(i=>i.opcode==System.Reflection.Emit.OpCodes.Stfld && i.operand is FieldInfo f && f.DeclaringType==typeof(KSA.Loading)), "Loading translation never writes its stored state");
+        Require(KsaUiLanguages.LoadingCaptionPatch.DisplayText("Loading editor tags from C:/Mods/Rocket.xml")=="加载编辑器标签：C:/Mods/Rocket.xml", "Loading prefix keeps the entire original file path");
+        foreach(string id in new[]{"EarthScale025","ScreenspaceVert","CoreCommandA_Prefab_MediumCapsuleVariantA"})
+            Require(KsaUiLanguages.LoadingCaptionPatch.DisplayText(id)==id, "Unknown loading task IDs stay exact");
+        Require(KsaUiLanguages.LoadingCaptionPatch.MemoryPrefix("VRAM: ~")=="显存: ~", "Loading memory label changes only the VRAM prefix");
+        results.Add("PASS: Loading display stages, immutable task state and original paths");
+
+        foreach(var method in KsaUiLanguages.DeeperResourceCaptionPatch.TargetMethods())
+            _=KsaUiLanguages.DeeperResourceCaptionPatch.Translate(PatchProcessor.GetOriginalInstructions(method).Select(i=>new CodeInstruction(i)),method).ToList();
+        Require(KsaUiLanguages.DeeperResourceCaptionPatch.LabelText("Storage Temperature:")=="储存温度:"
+            && KsaUiLanguages.DeeperResourceCaptionPatch.LabelText("User Resource")=="User Resource", "Deep resource labels distinguish known captions from object names");
+        KsaUiLanguages.DeeperResourceGraphScopePatch.Enter(out int graphPrevious);
+        Require(KsaUiLanguages.PartContextFieldCaptionPatch.CombinedCaption("Draw Graph").ToString()=="显示流动图", "Final composed helper includes deep resource graph scope");
+        var failure=new InvalidOperationException("test-scope");
+        Require(ReferenceEquals(KsaUiLanguages.DeeperResourceGraphScopePatch.Leave(failure,graphPrevious),failure)
+            && KsaUiLanguages.PartContextFieldCaptionPatch.CombinedCaption("Draw Graph").ToString()=="Draw Graph", "Graph finalizer restores scope and preserves the original exception");
+        foreach(var method in KsaUiLanguages.DeeperResourceEntryCaptionPatch.TargetMethods())
+            _=KsaUiLanguages.DeeperResourceEntryCaptionPatch.Translate(PatchProcessor.GetOriginalInstructions(method).Select(i=>new CodeInstruction(i)),method).ToList();
+        results.Add("PASS: Deep resource label sites, display-only graph checkbox and exception scope restoration");
+
+        var chuteLabels=new[]{"Canopy Diameter","Deploy Altitude","Arm","Disarm","Force Deploy","Un-reef","Cut"};
+        var chuteChinese=chuteLabels.ToDictionary(s=>s,KsaUiLanguages.ParachutePartCaptionPatch.ControlText);
+        foreach(var method in KsaUiLanguages.ParachutePartCaptionPatch.TargetMethods())
+            _=KsaUiLanguages.ParachutePartCaptionPatch.Translate(PatchProcessor.GetOriginalInstructions(method).Select(i=>new CodeInstruction(i)),method).ToList();
+        foreach(var state in Enum.GetValues<KSA.ChuteState>())
+        {
+            string raw=KSA.Parachute.StateLabel(state).ToString();
+            _=KsaUiLanguages.ParachutePartCaptionPatch.ClusterStateLabel(state);
+            Require(KSA.Parachute.StateLabel(state).ToString()==raw, "Native chute state labels remain unchanged outside the scoped renderer");
+        }
+        var bones=Enum.GetNames<KSA.CrewPortraitPanel.FaceCamBoneTarget>();
+        var boneChinese=bones.ToDictionary(s=>s,s=>KsaUiLanguages.CrewPortraitBoneCaptionPatch.LocalizeBoneCaption(s,true).ToString());
+        Require(bones.Length==4 && bones.All(s=>!KsaUiLanguages.CrewPortraitBoneCaptionPatch.LocalizeBoneCaption(s,false).ToString().Contains("###")), "Actual portrait targets use plain preview captions");
+        Require(KsaUiLanguages.CrewAssignmentCaptionPatch.StatusCaption("This vehicle has no seats.").ToString()=="这艘飞船没有乘员座位。", "Crew assignment has its scoped no-seat status");
+        results.Add("PASS: Actual parachute states, control targets and portrait selection captions");
+        KsaUiLanguages.Runtime.ApplyLanguage("en-US");
+        foreach(string label in chuteLabels)
+            Require(HashGuiId(KsaUiLanguages.ParachutePartCaptionPatch.ControlText(label),0x735A1913)==HashGuiId(chuteChinese[label],0x735A1913), "Parachute native control hashes remain stable in English");
+        foreach(string bone in bones)
+            Require(HashGuiId(KsaUiLanguages.CrewPortraitBoneCaptionPatch.LocalizeBoneCaption(bone,true).ToString(),0x735A1913)==HashGuiId(boneChinese[bone],0x735A1913), "Portrait option native hashes remain stable in English");
+        Require(KsaUiLanguages.WelcomeCaptionPatch.TitleText("WELCOME")=="WELCOME"
+            && KsaUiLanguages.LoadingCaptionPatch.DisplayText("Loading Complete")=="Loading Complete", "Welcome and loading restore original English captions");
+        KsaUiLanguages.Runtime.ApplyLanguage("zh-CN");
+        results.Add("PASS: Native control hashes and English round trip for the followup UI");
+    }
+
+    private static void CheckEditorStageAndTanks(List<string> results)
+    {
+        const string caption="REFILL CONSUMABLES";
+        Require(KsaUiLanguages.EditorStageCaptionPatch.ButtonCaption(caption)=="补满消耗品"
+            && !KsaUiLanguages.EditorStageCaptionPatch.ButtonCaption(caption).Contains("###"), "Editor refill caption is plain text for the custom renderer");
+        string[] nativeSegments={"AUTO GROUPS"};
+        ReadOnlySpan<string> segments=nativeSegments;
+        KsaUiLanguages.EditorSegmentsPatch.Localize("AutoResourceGroups",ref segments);
+        Require(segments.SequenceEqual(new[]{"自动分组"}) && nativeSegments[0]=="AUTO GROUPS", "Auto-group segment translates its display copy while retaining the stored source array");
+        var method=AccessTools.Method(typeof(KSA.VehicleEditingSpace),nameof(KSA.VehicleEditingSpace.DrawStageWindow));
+        var original=PatchProcessor.GetOriginalInstructions(method).Select(i=>new CodeInstruction(i)).ToList();
+        var patched=KsaUiLanguages.EditorStageCaptionPatch.Translate(original.Select(i=>new CodeInstruction(i))).ToList();
+        Require(patched.Count(i=>i.operand is MethodInfo m && m.Name=="RefillConsumables")
+            ==original.Count(i=>i.operand is MethodInfo m && m.Name=="RefillConsumables"), "Native resource refill callback remains present");
+        Require(patched.Where(i=>i.opcode==System.Reflection.Emit.OpCodes.Stsfld).Select(i=>i.operand)
+            .SequenceEqual(original.Where(i=>i.opcode==System.Reflection.Emit.OpCodes.Stsfld).Select(i=>i.operand)), "Native auto-group toggle still writes the original mode field");
+        var button=AccessTools.Method(typeof(KsaUiLanguages.EditorStageCaptionPatch),nameof(KsaUiLanguages.EditorStageCaptionPatch.Button));
+        var buttonIL=PatchProcessor.GetOriginalInstructions(button);
+        Require(buttonIL.Any(i=>i.opcode==System.Reflection.Emit.OpCodes.Ldarg_0)
+            && buttonIL.Any(i=>i.operand is MethodInfo m && m.DeclaringType==typeof(KSA.ConsoleWidgets) && m.Name=="Button" && m.GetParameters().Length==3), "Custom button passes its original caption separately as its native ID");
+        results.Add("PASS: Editor staging captions, immutable segments and original refill/group actions");
+        const string tankId="CoreFuelTankA_Prefab_LF1WHalfHA";
+        var template=new KSA.PartTemplate {Id=tankId,DisplayName=tankId};
+        Require(KsaUiLanguages.Runtime.CurrentPack.Parts.Count==52
+            && KsaUiLanguages.Runtime.PartName(template)=="1 米短型推进剂箱 LF1WHalfHA", "Screenshot tank has a model-preserving Chinese caption");
+        Require(template.Id==tankId && template.DisplayName==tankId, "Tank name translation leaves the original template fields unchanged");
+        KsaUiLanguages.Runtime.ApplyLanguage("en-US");
+        Require(KsaUiLanguages.Runtime.PartName(template)==tankId && KsaUiLanguages.EditorStageCaptionPatch.ButtonCaption(caption)==caption, "Tank tooltip and refill caption restore native English");
+        segments=nativeSegments;
+        KsaUiLanguages.EditorSegmentsPatch.Localize("AutoResourceGroups",ref segments);
+        Require(segments.SequenceEqual(nativeSegments), "Auto-group segments restore English with the same original control ID");
+        KsaUiLanguages.Runtime.ApplyLanguage("zh-CN");
+        results.Add("PASS: Expanded tank names, immutable template IDs and editor English round trip");
     }
 
     private static void Require(bool condition, string message)

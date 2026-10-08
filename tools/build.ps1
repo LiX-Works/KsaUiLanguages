@@ -15,7 +15,7 @@ if (!$Dotnet) {
     else { $Dotnet = (Get-Command dotnet -ErrorAction Stop).Source }
 }
 $taskGameVersion = [Reflection.AssemblyName]::GetAssemblyName((Join-Path $GameDir 'KSA.dll')).Version.ToString()
-if ($taskGameVersion -ne '2026.10.7.5541') { throw "Expected KSA 2026.10.7.5541, found $taskGameVersion." }
+if ($taskGameVersion -notin @('2026.10.7.5541','2026.10.10.5554')) { throw "Expected KSA 2026.10.7.5541 or 2026.10.10.5554, found $taskGameVersion." }
 foreach ($taskFile in @('StarMap.API.dll', '0Harmony.dll')) {
     if (!(Test-Path -LiteralPath (Join-Path $LoaderDir $taskFile))) { throw "Missing loader dependency: $taskFile" }
 }

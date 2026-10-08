@@ -41,7 +41,7 @@ public static class EditorSegmentsPatch
 {
     private static readonly HashSet<string> Ids = new(StringComparer.Ordinal)
     {
-        "GizmoTool", "GizmoFrame", "SymmetryCycle", "InheritToggle", "SnapToggle", "CameraMode", "Projection"
+        "GizmoTool", "GizmoFrame", "SymmetryCycle", "InheritToggle", "SnapToggle", "CameraMode", "Projection", "AutoResourceGroups"
     };
 
     [HarmonyPrefix]

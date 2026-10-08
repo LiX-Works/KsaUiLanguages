@@ -1,4 +1,29 @@
 $TaskProductId = 'org.ksa.uilanguages.installer'
+$TaskSupportedGameVersions = @('2026.10.7.5541', '2026.10.10.5554')
+function Get-TaskPackageGameVersions {
+    param($Package)
+    $taskVersions = @($Package.supportedGameVersions)
+    if ($Package.productId -ne $TaskProductId -or
+        $taskVersions.Count -ne $TaskSupportedGameVersions.Count -or
+        @($taskVersions | Sort-Object -Unique).Count -ne $taskVersions.Count -or
+        @($taskVersions | Where-Object { $_ -notin $TaskSupportedGameVersions }).Count -ne 0 -or
+        $Package.gameVersion -notin $taskVersions) { throw 'Invalid installer supported-game metadata.' }
+    return $taskVersions
+}
+function Get-TaskInstallationGameVersion {
+    param([string]$Root, $State)
+    $taskMarker = Get-Content -Encoding UTF8 -Raw -LiteralPath (Join-Path $Root '.ownership.json') | ConvertFrom-Json
+    $taskMarkerVersion = [string]$taskMarker.gameVersion
+    $taskStateVersion = [string]$State.gameVersion
+    # Installers 1-4 supported only 5541 and did not record the game version.
+    # Do not infer a legacy instance's version from a game folder upgraded in place.
+    if (!$taskStateVersion -and $State -and [string]$State.installerVersion -match '^[1-4]$') { $taskStateVersion = '2026.10.7.5541' }
+    if ($taskMarkerVersion -and $taskStateVersion -and $taskMarkerVersion -ne $taskStateVersion) { throw 'Installation game-version records disagree.' }
+    $taskVersion = $taskMarkerVersion
+    if (!$taskVersion) { $taskVersion = $taskStateVersion }
+    if ($taskVersion -notin $TaskSupportedGameVersions) { throw 'Cannot establish the game version owned by this installation folder.' }
+    return $taskVersion
+}
 function Assert-TaskSafeRoot {
     param([string]$Root)
     if ([string]::IsNullOrWhiteSpace($Root)) { throw 'Installation path is empty.' }

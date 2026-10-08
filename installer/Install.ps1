@@ -19,24 +19,21 @@ $taskNL = [Environment]::NewLine
 try {
     if ($NonInteractive -and !$AcceptLicenses) { throw 'Noninteractive installation requires -AcceptLicenses after reviewing the included license files.' }
     if (![Environment]::Is64BitOperatingSystem -or ![Environment]::Is64BitProcess) { throw '本安装包需要 64 位 Windows 和 64 位 PowerShell。' }
-    if (!$InstallRoot) { $InstallRoot = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'KsaUiLanguages\Build5541' }
-    $taskRoot = Assert-TaskSafeRoot -Root $InstallRoot
+    $taskPackage = Get-Content -Encoding UTF8 -Raw -LiteralPath (Join-Path $PSScriptRoot 'package.json') | ConvertFrom-Json
+    $taskSupportedVersions = @(Get-TaskPackageGameVersions -Package $taskPackage)
     $taskExistingState = $null
-    if (Test-Path -LiteralPath $taskRoot) {
-        if (@(Get-ChildItem -LiteralPath $taskRoot -Force).Count) {
+    if ($InstallRoot) {
+        $taskRoot = Assert-TaskSafeRoot -Root $InstallRoot
+        if (Test-Path -LiteralPath (Join-Path $taskRoot 'install-state.json') -PathType Leaf) {
             $null = Assert-TaskOwnedRoot -Root $taskRoot
-            Assert-TaskNoReparsePoints -Path $taskRoot
-            if (Test-Path -LiteralPath (Join-Path $taskRoot 'install-state.json')) {
-                $taskExistingState = Get-Content -Encoding UTF8 -Raw -LiteralPath (Join-Path $taskRoot 'install-state.json') | ConvertFrom-Json
-                if ($taskExistingState.productId -ne $TaskProductId) { throw 'Installation state does not belong to this product.' }
-            }
+            $taskExistingState = Get-Content -Encoding UTF8 -Raw -LiteralPath (Join-Path $taskRoot 'install-state.json') | ConvertFrom-Json
         }
     }
     if (!$GameDir) {
         if ($NonInteractive) { throw 'Noninteractive installation requires -GameDir.' }
         Add-Type -AssemblyName System.Windows.Forms
         $taskDialog = New-Object Windows.Forms.FolderBrowserDialog
-        $taskDialog.Description = '选择 KSA 2026.10.7.5541 的游戏安装目录（包含 KSA.dll）'
+        $taskDialog.Description = '选择 KSA 5541 或 5554 的游戏安装目录（包含 KSA.dll）'
         $taskDialog.ShowNewFolderButton = $false
         if ($taskExistingState -and (Test-Path -LiteralPath $taskExistingState.gameDir)) { $taskDialog.SelectedPath = $taskExistingState.gameDir }
         else {
@@ -50,15 +47,27 @@ try {
     }
     $GameDir = [IO.Path]::GetFullPath($GameDir).TrimEnd('\','/')
     $taskVersion = Get-TaskGameVersion -GameDir $GameDir
-    if ($taskVersion -ne '2026.10.7.5541') { throw "此汉化只支持 2026.10.7.5541；选中的游戏版本是 $taskVersion。" }
+    if ($taskVersion -notin $taskSupportedVersions) { throw "此汉化只支持 $($taskSupportedVersions -join '、')；选中的游戏版本是 $taskVersion。" }
+    $taskBuild = ([version]$taskVersion).Revision
+    $taskShortcutName = "KSA 中文版 ($taskBuild)"
+    if (!$InstallRoot) { $InstallRoot = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) ("KsaUiLanguages\Build$taskBuild") }
+    $taskRoot = Assert-TaskSafeRoot -Root $InstallRoot
+    if ((Test-Path -LiteralPath $taskRoot) -and @(Get-ChildItem -LiteralPath $taskRoot -Force).Count) {
+        $null = Assert-TaskOwnedRoot -Root $taskRoot
+        Assert-TaskNoReparsePoints -Path $taskRoot
+        if (Test-Path -LiteralPath (Join-Path $taskRoot 'install-state.json') -PathType Leaf) {
+            $taskExistingState = Get-Content -Encoding UTF8 -Raw -LiteralPath (Join-Path $taskRoot 'install-state.json') | ConvertFrom-Json
+            if ($taskExistingState.productId -ne $TaskProductId) { throw 'Installation state does not belong to this product.' }
+        }
+        $taskOwnedVersion = Get-TaskInstallationGameVersion -Root $taskRoot -State $taskExistingState
+        if ($taskOwnedVersion -ne $taskVersion) { throw "此安装目录属于 KSA $taskOwnedVersion，不能用于 $taskVersion。请选择新的安装目录，以保留原实例的存档与配置。" }
+    }
     foreach ($taskProcess in @(Get-CimInstance Win32_Process -Filter "Name = 'StarMap.exe'")) {
         if ([string]::IsNullOrWhiteSpace([string]$taskProcess.ExecutablePath)) { throw '无法确认正在运行的 StarMap 所属目录。请先关闭 StarMap，再安装。' }
         if ($taskProcess.ExecutablePath -and $taskProcess.ExecutablePath.StartsWith($taskRoot + '\', [StringComparison]::OrdinalIgnoreCase)) {
             throw '本安装的游戏正在运行，请先关闭，再安装或更新。'
         }
     }
-    $taskPackage = Get-Content -Encoding UTF8 -Raw -LiteralPath (Join-Path $PSScriptRoot 'package.json') | ConvertFrom-Json
-    if ($taskPackage.productId -ne $TaskProductId -or $taskPackage.gameVersion -ne '2026.10.7.5541') { throw 'Invalid installer package metadata.' }
     if (@($taskPackage.archives).Count -ne 3 -or @($taskPackage.archives.name | Sort-Object -Unique).Count -ne 3) { throw 'Installer must include exactly three unique payload archives.' }
     foreach ($taskArchive in $taskPackage.archives) {
         if ($taskArchive.name -notin @('plugin.zip','loader.zip','runtime.zip') -or $taskArchive.sha256 -notmatch '^[0-9a-f]{64}$') { throw 'Invalid payload entry.' }
@@ -75,7 +84,7 @@ try {
     }
     New-Item -ItemType Directory -Path $taskRoot -Force | Out-Null
     if (!(Test-Path -LiteralPath (Join-Path $taskRoot '.ownership.json'))) {
-        Write-TaskJson -Path (Join-Path $taskRoot '.ownership.json') -Value @{productId=$TaskProductId;rootPath=$taskRoot}
+        Write-TaskJson -Path (Join-Path $taskRoot '.ownership.json') -Value @{productId=$TaskProductId;rootPath=$taskRoot;gameVersion=$taskVersion}
     }
     $taskDeployment = Assert-TaskChildPath -Root $taskRoot -Path (Join-Path $taskRoot ('deployments\' + [guid]::NewGuid().ToString('N')))
     New-Item -ItemType Directory -Path $taskDeployment -Force | Out-Null
@@ -142,15 +151,15 @@ try {
             $taskExistingLink = $taskShell.CreateShortcut($taskShortcut)
             $taskReuseShortcut = $taskExistingLink.TargetPath -ieq $taskHostPath -and $taskExistingLink.Arguments -ieq $taskShortcutArguments
         }
-        if (!$taskReuseShortcut) { $taskShortcut = Join-Path $taskDesktop 'KSA 中文版 (5541).lnk' }
+        if (!$taskReuseShortcut) { $taskShortcut = Join-Path $taskDesktop ($taskShortcutName + '.lnk') }
         $taskOldLinkItem = Get-Item -LiteralPath $taskShortcut -Force -ErrorAction SilentlyContinue
         if ($taskOldLinkItem) {
             if ($taskOldLinkItem.Attributes -band [IO.FileAttributes]::ReparsePoint -or $taskOldLinkItem.PSIsContainer) {
-                $taskShortcut = Join-Path $taskDesktop ('KSA 中文版 (5541)-' + [guid]::NewGuid().ToString('N').Substring(0,6) + '.lnk')
+                $taskShortcut = Join-Path $taskDesktop ($taskShortcutName + '-' + [guid]::NewGuid().ToString('N').Substring(0,6) + '.lnk')
             } else {
                 $taskOldLink = $taskShell.CreateShortcut($taskShortcut)
                 if ($taskOldLink.TargetPath -ine $taskHostPath -or $taskOldLink.Arguments -ine $taskShortcutArguments) {
-                $taskShortcut = Join-Path $taskDesktop ('KSA 中文版 (5541)-' + [guid]::NewGuid().ToString('N').Substring(0,6) + '.lnk')
+                $taskShortcut = Join-Path $taskDesktop ($taskShortcutName + '-' + [guid]::NewGuid().ToString('N').Substring(0,6) + '.lnk')
                 }
             }
         }
@@ -160,18 +169,19 @@ try {
         $taskLink.TargetPath = $taskHostPath
         $taskLink.Arguments = $taskShortcutArguments
         $taskLink.WorkingDirectory = $taskRoot
-        $taskLink.Description = 'KSA 5541 简体中文，独立配置与存档'
+        $taskLink.Description = "KSA $taskBuild 简体中文，独立配置与存档"
         $taskLink.IconLocation = (Join-Path $taskLoader 'StarMap.exe') + ',0'
         $taskShortcutTouched = $true
         $taskLink.Save()
     }
     Write-TaskJson -Path (Join-Path $taskRoot 'install-state.json') -Value @{
-        productId=$TaskProductId;gameDir=$GameDir;loaderDir=$taskLoader;runtimeDir=$taskRuntime
+        productId=$TaskProductId;gameDir=$GameDir;gameVersion=$taskVersion;loaderDir=$taskLoader;runtimeDir=$taskRuntime
         instanceDir=$taskInstance;deploymentDir=$taskDeployment;desktopShortcut=$taskShortcut
         installerVersion=$taskPackage.installerVersion;pluginVersion=$taskPackage.pluginVersion;uninstalled=$false
     }
+    Write-TaskJson -Path (Join-Path $taskRoot '.ownership.json') -Value @{productId=$TaskProductId;rootPath=$taskRoot;gameVersion=$taskVersion}
     $taskCommitted = $true
-    $taskDone = [string]::Join($taskNL, @('安装完成。','','请从桌面“KSA 中文版 (5541)”启动。','菜单栏可选择 Language / 语言。','',"配置与存档：$taskInstance","卸载：$taskRoot\Uninstall.cmd"))
+    $taskDone = [string]::Join($taskNL, @('安装完成。','',('请从桌面“{0}”启动。' -f $taskShortcutName),'菜单栏可选择 Language / 语言。','',"配置与存档：$taskInstance","卸载：$taskRoot\Uninstall.cmd"))
     Show-TaskMessage -Message $taskDone -NonInteractive:$NonInteractive
 }
 catch {

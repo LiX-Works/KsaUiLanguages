@@ -48,7 +48,9 @@ try {
         if (!(Test-Path -LiteralPath $taskFile -PathType Leaf)) { throw "安装文件缺失：$taskFile" }
     }
     $taskGameVersion = Get-TaskGameVersion -GameDir ([string]$taskState.gameDir)
-    if ($taskGameVersion -ne '2026.10.7.5541') { throw "仅支持 KSA 2026.10.7.5541，当前版本：$taskGameVersion" }
+    if ($taskGameVersion -notin $TaskSupportedGameVersions) { throw "仅支持 KSA $($TaskSupportedGameVersions -join '、')，当前版本：$taskGameVersion" }
+    $taskOwnedVersion = Get-TaskInstallationGameVersion -Root $taskRoot -State $taskState
+    if ($taskGameVersion -ne $taskOwnedVersion) { throw "本实例属于 KSA $taskOwnedVersion，游戏目录当前版本为 $taskGameVersion。请为新版创建独立安装。" }
     $taskConfig = Get-Content -Encoding UTF8 -LiteralPath (Join-Path $taskLoader 'StarMapConfig.json') -Raw | ConvertFrom-Json
     $taskConfiguredGame = [IO.Path]::GetFullPath([string]$taskConfig.GameLocation)
     if ([IO.Path]::GetExtension($taskConfiguredGame) -ieq '.dll') {
