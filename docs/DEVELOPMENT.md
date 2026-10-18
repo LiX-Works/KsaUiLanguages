@@ -20,7 +20,7 @@
 .\tools\build.ps1 -GameDir 'C:\Games\Kitten Space Agency' -LoaderDir 'C:\Tools\StarMap-0.4.7' -Check
 ~~~
 
-脚本构建并运行 LanguageChecks，结果写到 work/run-logs/language-checks.json。检查使用实际游戏 LString 对象，以及游戏 imgui.dll 的 ImHashStr 导出，涵盖中英切换、占位符、按钮标题与 ID、设置下拉的作用范围、动态对象名称及卸载回退。
+脚本构建并运行 LanguageChecks，结果写到 work/run-logs/language-checks.json。检查使用实际游戏 LString 对象，以及游戏 imgui.dll 的 ImHashStr 导出，涵盖中、日、英切换、占位符、按钮标题与 ID、设置下拉的作用范围、动态对象名称及卸载回退。
 
 检查程序通过独立目录重定向玩家文件位置，不启动图形游戏。它不是完整的游戏操作测试，也不能证明长时间稳定性。
 
@@ -34,7 +34,7 @@
 .\tools\package.ps1
 ~~~
 
-生成 dist/KsaUiLanguages-0.5.0-build5541-5554.zip 和 SHA256SUMS.txt。打包使用新的 staging 目录与文件白名单，拒绝游戏/加载器 DLL。
+生成 dist/KsaUiLanguages-0.6.0-build5541-5554.zip 和 SHA256SUMS.txt。打包使用新的 staging 目录与文件白名单，拒绝游戏/加载器 DLL。
 
 若需要与当前 Git 提交严格对应的源码包，先提交所有准备发行的更改，再运行：
 
@@ -83,3 +83,6 @@ v0.4.2同时支持两个精确游戏版本，拒绝未验证版本；同一发�
 
 
 v0.5.0统一使用新的版本编号，功能与v0.4.2一致；后续公开更新按0.1递增，补丁位保持0，见[版本编号规则](VERSIONING.md)。历史v0.4.2检查记录保留。
+
+
+v0.6.0 在相同框架中加入 ja-JP.json，与中文各有 1,625 条记录。复用现有字体并补全日文字符，欢迎页在原有文本分段内处理假名、日文引号、小假名和长音号；不改原热键卡片。两个支持版本各通过 59 项语言与控件检查，发布包安装流程另行检查。5554 的日文启动/加载画面已实机查看，用户截图确认欢迎页换行及飞行场景显示；日文完整飞行操作、游戏内三语言菜单操作及长期稳定性未全面验证。

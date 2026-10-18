@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Export the current Chinese locale as a review catalog and plain CSV."""
+"""Export a supported locale as a review catalog and plain CSV."""
 
 from __future__ import annotations
 
@@ -17,7 +17,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_GAME_DIR = Path(r"C:\Program Files\Kitten Space Agency")
 DEFAULT_OUT_DIR = ROOT / "work" / "exports" / "dictionary-local"
-LOCALE_FILE = ROOT / "assets" / "KsaUiLanguages" / "Locales" / "zh-CN.json"
+LOCALES_DIR = ROOT / "assets" / "KsaUiLanguages" / "Locales"
+SUPPORTED_LOCALES = ("zh-CN", "ja-JP")
 INVENTORY_FILE = ROOT / "reference" / "native-source-5541.json"
 SEMANTIC_CONTEXT_FILE = ROOT / "reference" / "translation-context.zh-CN.json"
 CSPROJ_FILE = ROOT / "src" / "KsaUiLanguages" / "KsaUiLanguages.csproj"
@@ -230,7 +231,7 @@ def build_entries(locale, inventory, part_names, naming_notes, semantic_context)
                     original = key
                     original_status = "internal_id_fallback"
                     original_kind = "internal_id_fallback"
-                    notes.append("Original falls back to the template ID; the Chinese label is an independent proposed name, not a translation from natural-language English.")
+                    notes.append("Original falls back to the template ID; the target-language label is an independent proposed name, not a translation from natural-language English.")
                     if record and record.get("conflict"):
                         notes.append("Conflicting XML DisplayName values found; ID fallback used instead of guessing.")
                     elif record and record.get("file"):
@@ -321,12 +322,16 @@ def write_and_check_csv(path: Path, entries):
     return len(roundtrip)
 
 
-def write_plain_text(path: Path):
-    content = """多语言词典校对说明
+def write_plain_text(path: Path, locale_code: str):
+    content = f"""多语言词典校对说明
 
-这份校对目录由 KSA 简体中文源词典导出，JSON 是规范记录，CSV 是相同条目的 UTF-8 BOM 平面视图，方便复制、筛选或供其他 AI 阅读。它们不是可直接安装的插件语言包，也不取代 assets/KsaUiLanguages/Locales/zh-CN.json；源词典仍是唯一正式数据源。导出中的 key、entry_id、original、section、coverage、placeholders、retain_terms 和 notes 用于定位与审计，请勿改写。remarks（CSV 对应“备注”栏）由项目作者按已知界面与功能填写，用于说明出现位置、操作对象和多义词语境；本身清楚的条目可留空。校对者应先阅读这些语义备注，再把修改建议填入 proposed_translation 和 reviewer_notes，逐条按 entry_id 返回；不要直接覆盖 translation 或作者备注。建议技术评审与中文写作评审分开：前者核实原文含义、功能、参数与模型事实，后者检查自然表达、玩家语感、词语选择与语气一致性。争议由主审按源码/界面上下文裁定，不按意见数量投票。建议返回格式：{"changes":[{"entry_id":"...","proposed_translation":"...","reason":"...","confidence":"high|medium|low"}]}。如发现作者备注不足或存在疑问，可在 reviewer_notes 中指出，供主审补核。无需修改的条目可以省略。
+目标语言：{locale_code}。语义备注的语言：zh-CN；来源：reference/translation-context.zh-CN.json。日语目录复用的是中文语义说明，不是日语作者备注，也不是英语原文。
 
-“信”是准确呈现技术含义、用途、参数和模型事实；“达”是让中文易懂、顺畅、指向明确；“雅”是地道自然、有玩家语感、选词恰当且语气一致。长度没有固定上限：按界面空间调整，但不要为了短而省掉必要语义。避免生硬直译，也避免为求文采加入原文没有的含义。先判断术语在此处的实际功能，再建议译法。相同英文可能在不同 section 承担不同用途，不能合并。native 的英文原文仅由 5541 文本清单按 ID 对应；originalSourceStatus 为 missing 时不要根据 ID 猜原文。parts 的 key 是 prefab/template ID，不能翻译或重排；若 originalSourceStatus 为 internal_id_fallback，original 只是内部 ID，当前中文名称是独立拟名，不是从自然英文翻译来的。可用随条目提供的命名依据辅助审阅，但不能把它当作英语原文。
+""" + """
+
+这份校对目录由指定的 KSA 语言源词典导出，JSON 是规范记录，CSV 是相同条目的 UTF-8 BOM 平面视图，方便人工复制、筛选或供其他 AI 阅读。它们不是可直接安装的插件语言包，也不取代 assets/KsaUiLanguages/Locales/<目标语言>.json；对应的源词典仍是正式数据源。导出中的 key、entry_id、original、section、coverage、placeholders、retain_terms 和 notes 用于定位与审计，请勿改写。remarks（CSV 对应“备注”栏）由项目作者按已知界面与功能填写，用于说明出现位置、操作对象和多义词语境；本身清楚的条目可留空。校对者应先阅读这些中文语义备注，再把目标语言的修改建议填入 proposed_translation 和 reviewer_notes，逐条按 entry_id 返回；不要直接覆盖 translation 或作者备注。建议技术评审与目标语言写作评审分开：前者核实原文含义、功能、参数与模型事实，后者检查自然表达、玩家语感、词语选择与语气一致性。争议由主审按源码/界面上下文裁定，不按意见数量投票。建议返回格式：{"changes":[{"entry_id":"...","proposed_translation":"...","reason":"...","confidence":"high|medium|low"}]}。如发现作者备注不足或存在疑问，可在 reviewer_notes 中指出，供主审补核。无需修改的条目可以省略。
+
+“信”是准确呈现技术含义、用途、参数和模型事实；“达”是让目标语言易懂、顺畅、指向明确；“雅”是地道自然、有玩家语感、选词恰当且语气一致。长度没有固定上限：按界面空间调整，但不要为了短而省掉必要语义。避免生硬直译，也避免为求文采加入原文没有的含义。先判断术语在此处的实际功能，再建议译法。相同英文可能在不同 section 承担不同用途，不能合并。native 的英文原文仅由 5541 文本清单按 ID 对应；originalSourceStatus 为 missing 时不要根据 ID 猜原文。parts 的 key 是 prefab/template ID，不能翻译或重排；若 originalSourceStatus 为 internal_id_fallback，original 只是内部 ID，当前目标语言名称是独立拟名，不是从自然英文翻译来的。可用随条目提供的 5541 中文命名依据辅助审阅，但不能把它当作英语原文；部件英文显示名由实际导出时提供的 Core XML 独立读取，版本见 partsXmlGameVersion。
 
 所有大括号占位符必须原样、完整、大小写一致，数量也要一致。保留控制标识、X/Y/Z、倍数、部件型号/编号、数字、单位符号和格式；常见缩写 RCS、Δv、TWR、Isp、EVA、HUD、IVA，以及 STAR、SURF、ORBT、OVEL、TGT、BURN 等按 terms 规则保留。ORBIT 要结合上下文：编辑器相机模式表示环绕相机，不是飞行轨道。部件读数的冒号用于两列排版，保留 ASCII 冒号与布局空格；不要改成全角冒号。标记 KNOWN_FRAGMENT 的条目是运行时拼接片段，邻接空格、标点及动态名称/ID 都要保留。
 
@@ -335,14 +340,31 @@ coverage 是谨慎的集成状态说明，不表示每个条目均已在游戏�
     path.write_text(content, encoding="utf-8", newline="\n")
 
 
+def validate_locale(locale, locale_code: str):
+    if locale.get("locale") != locale_code:
+        raise ValueError(f"Locale identifier does not match --locale {locale_code}.")
+    baseline = read_json(LOCALES_DIR / "zh-CN.json")
+    sections = {key for key, value in locale.items() if isinstance(value, dict)}
+    baseline_sections = {key for key, value in baseline.items() if isinstance(value, dict)}
+    if sections != baseline_sections or any(set(locale[key]) != set(baseline[key]) for key in sections):
+        raise ValueError(f"{locale_code} section/key coverage differs from zh-CN.")
+    if any(not isinstance(value, str) or not value.strip() for section in sections for value in locale[section].values()):
+        raise ValueError(f"{locale_code} has an empty or non-string translation.")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR, help="Output directory (default: work/exports/dictionary-local).")
+    parser.add_argument("--locale", choices=SUPPORTED_LOCALES, default="zh-CN", help="Target locale (default: zh-CN).")
+    parser.add_argument("--out-dir", type=Path, help="Output directory (default: work/exports/dictionary-local for zh-CN; its ja-JP subdirectory for ja-JP).")
     parser.add_argument("--game-dir", type=Path, default=DEFAULT_GAME_DIR, help="KSA install directory; may also point directly to Content/Core.")
     parser.add_argument("--parts-game-version", default="2026.10.7.5541", choices=("2026.10.7.5541", "2026.10.10.5554"), help="Version of the supplied Core XML (source label, not an automatic compatibility check).")
     args = parser.parse_args()
 
-    locale = read_json(LOCALE_FILE)
+    locale_file = LOCALES_DIR / f"{args.locale}.json"
+    locale = read_json(locale_file)
+    validate_locale(locale, args.locale)
+    if args.out_dir is None:
+        args.out_dir = DEFAULT_OUT_DIR if args.locale == "zh-CN" else DEFAULT_OUT_DIR / args.locale
     inventory = read_json(INVENTORY_FILE)
     game_version = inventory.get("game_version", "unknown")
     version_match = VERSION_RE.search(CSPROJ_FILE.read_text(encoding="utf-8-sig"))
@@ -359,8 +381,8 @@ def main() -> int:
     if len(ids) != len(set(ids)):
         raise ValueError("Generated entry_id values are not unique.")
     args.out_dir.mkdir(parents=True, exist_ok=True)
-    csv_path = args.out_dir / "review-catalog.zh-CN.csv"
-    json_path = args.out_dir / "review-catalog.zh-CN.json"
+    csv_path = args.out_dir / f"review-catalog.{args.locale}.csv"
+    json_path = args.out_dir / f"review-catalog.{args.locale}.json"
     text_path = args.out_dir / "校对说明.txt"
     csv_rows = write_and_check_csv(csv_path, entries)
     if csv_rows != len(entries):
@@ -371,7 +393,7 @@ def main() -> int:
         key for key in (locale.get("parts", {}) if isinstance(locale.get("parts"), dict) else {}) if key not in part_names
     )
     source_files = [
-        "assets/KsaUiLanguages/Locales/zh-CN.json",
+        locale_file.relative_to(ROOT).as_posix(),
         "reference/native-source-5541.json",
         "src/KsaUiLanguages/KsaUiLanguages.csproj",
         "game install: Content/Core/**/*.xml (resolved from --game-dir)",
@@ -388,12 +410,16 @@ def main() -> int:
         "partsXmlGameVersion": args.parts_game_version,
         "supportedGameVersions": ["2026.10.7.5541", "2026.10.10.5554"],
         "pluginVersion": plugin_version,
-        "locale": locale.get("locale", "zh-CN"),
+        "locale": args.locale,
+        "localeSourceSha256": hashlib.sha256(locale_file.read_bytes()).hexdigest(),
         "sourceFiles": source_files,
         "optionalFields": {
             "remarks": {
                 "label": "备注",
                 "default": "",
+                "language": "zh-CN",
+                "source": SEMANTIC_CONTEXT_FILE.relative_to(ROOT).as_posix(),
+                "sourceSha256": hashlib.sha256(SEMANTIC_CONTEXT_FILE.read_bytes()).hexdigest() if SEMANTIC_CONTEXT_FILE.is_file() else None,
                 "description": "Optional author-supplied UI location, affected object/function and semantic disambiguation; obvious entries may be blank. Review suggestions belong in reviewer_notes.",
             }
         },
@@ -401,6 +427,7 @@ def main() -> int:
         "validation": {
             "entry_count": len(entries),
             "entry_ids_unique": True,
+            "locale_section_key_parity_with_zh_CN": "passed",
             "csv_row_count": csv_rows,
             "csv_round_trip": "passed",
             "native_missing_source_count": missing_native,
@@ -422,10 +449,10 @@ def main() -> int:
     }
     catalog = {"meta": meta, "terms": terms, "entries": entries}
     json_path.write_text(json.dumps(catalog, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
-    write_plain_text(text_path)
+    write_plain_text(text_path, args.locale)
     # Parse the emitted artifact once to catch encoding/serialization errors.
     emitted = read_json(json_path)
-    if len(emitted.get("entries", [])) != len(entries) or len({e["entry_id"] for e in emitted["entries"]}) != len(entries):
+    if emitted != catalog:
         raise ValueError("JSON round-trip validation failed.")
 
     section_counts = collections.Counter(entry["section"] for entry in entries)

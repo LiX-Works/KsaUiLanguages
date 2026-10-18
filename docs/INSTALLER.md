@@ -1,6 +1,6 @@
 # 离线安装与更新
 
-[下载 v0.5.0](https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.5.0)，选择 **KsaUiLanguages-0.5.0-installer5-win-x64.zip**。包内含汉化插件、StarMap 0.4.7 和私有 .NET 10.0.12 Runtime，不含游戏本体。
+[下载 v0.6.0](https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.6.0)，选择 **KsaUiLanguages-0.6.0-installer5-win-x64.zip**。包内含汉化插件、StarMap 0.4.7 和私有 .NET 10.0.12 Runtime，不含游戏本体。
 
 ## 安装
 
@@ -9,6 +9,8 @@
 3. 从 **KSA 中文版 (5554)** 或 **KSA 中文版 (5541)** 桌面入口启动。
 
 无需管理员权限、SDK或全局.NET，可离线安装。双击PS1可能只会打开记事本，请使用CMD入口，勿将整个脚本复制到命令提示符。
+
+安装提示和桌面入口名称目前仍为中文，包内附中、日、英安装说明。游戏默认中文，进入后可在 **Language → 日本語 / 简体中文 / English** 切换。若希望从启动配置页就显示日文，将下方 language.json 的 locale 改为 ja-JP；英文为 en-US。
 
 ## 同版本更新和跨版本迁移
 
@@ -37,7 +39,7 @@
 
 安装流程在Windows PowerShell 5.1中检查中文/空格路径、重装、备份、跨版本拒绝、错误版本、重解析点、快捷方式归属和卸载保留存档。5541 通过18项，5554通过16项；额外的5541检查验证旧安装助手状态迁移。使用项目内临时实例，不触及真实桌面，不启动游戏。
 
-插件在两版均通过54项语言和控件检查。5554另有实际启动、主要窗口和独立保存/载入记录；这不代表安装助手GUI、第二台电脑或全部游戏操作已验收。
+插件在两版均通过59项语言和控件检查。5554另有实际启动、主要窗口和独立保存/载入记录；这不代表安装助手GUI、第二台电脑或全部游戏操作已验收。
 
 ## 开发者打包
 
@@ -48,4 +50,4 @@
 .\tools\check_installer.ps1 -GameDir 'C:\Games\KSA-5554' -OtherGameDir 'C:\Games\KSA-5541'
 ~~~
 
-输出dist/KsaUiLanguages-0.5.0-installer5-win-x64.zip。脚本复用校验过的本地插件及依赖缓存；加载器和运行时来自锁定官方URL，核对SHA-256，运行时另核对SHA-512。包内PS1为UTF-8 BOM，CMD为Windows换行，兼容系统PowerShell5.1。
+输出dist/KsaUiLanguages-0.6.0-installer5-win-x64.zip。脚本复用校验过的本地插件及依赖缓存；加载器和运行时来自锁定官方URL，核对SHA-256，运行时另核对SHA-512。包内PS1为UTF-8 BOM，CMD为Windows换行，兼容系统PowerShell5.1。

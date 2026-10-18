@@ -243,6 +243,7 @@ internal static class Program
         Require(KSA.LStrings.SettingsDisplayResolution.Localized == KSA.LStrings.SettingsDisplayResolution.Template,
             "Removing the provider restores English");
         results.Add("PASS: Provider removal restores English");
+        CheckJapanesePack(results);
         var patchSmoke = new Harmony("org.ksa.uilanguages.patchsmoke");
         string[] patchedDisplayMethods=Array.Empty<string>();
         try
@@ -279,6 +280,70 @@ internal static class Program
     {
         __result = Path.Combine(Root, @"work\headless-language-checks");
         return false;
+    }
+
+    private static void CheckJapanesePack(List<string> results)
+    {
+        var japanese = KsaUiLanguages.Runtime.Packs["ja-JP"];
+        var chinese = KsaUiLanguages.Runtime.Packs["zh-CN"];
+        foreach (var property in typeof(KsaUiLanguages.LanguagePack).GetProperties()
+            .Where(p => p.PropertyType == typeof(Dictionary<string, string>)))
+        {
+            var expected = (Dictionary<string, string>)property.GetValue(chinese)!;
+            var actual = (Dictionary<string, string>)property.GetValue(japanese)!;
+            Require(expected.Keys.Order().SequenceEqual(actual.Keys.Order()), "Japanese section coverage: " + property.Name);
+            foreach (var entry in actual)
+            {
+                string source = property.Name == "Native"
+                    ? ((Brutal.Localization.LString)typeof(KSA.LStrings).GetField(entry.Key)!.GetValue(null)!).Template
+                    : entry.Key;
+                string[] Placeholders(string text) => System.Text.RegularExpressions.Regex.Matches(text, @"\{[^{}]+\}")
+                    .Select(m => m.Value).Order().ToArray();
+                Require(!string.IsNullOrWhiteSpace(entry.Value)
+                    && Placeholders(source).SequenceEqual(Placeholders(entry.Value)), "Japanese text and format tokens: " + entry.Key);
+            }
+        }
+        results.Add("PASS: Japanese pack covers every existing section and preserves format tokens");
+        KsaUiLanguages.Runtime.ApplyLanguage("ja-JP");
+        Require(japanese.DisplayName == "日本語"
+            && KSA.LStrings.SettingsDisplayResolution.Localized == japanese.Native["SettingsDisplayResolution"]
+            && KSA.LStrings.SettingsDisplayResolution.Localized != KSA.LStrings.SettingsDisplayResolution.Template,
+            "Japanese is loaded by the real native provider");
+        Require(KSA.LStrings.AlertTargetSet.Localized.Contains("{Target}")
+            && KsaUiLanguages.Runtime.EditorNativeText("At CustomSite-42 On Earth", 2).Contains("CustomSite-42"),
+            "Japanese target tokens and supplied location names are preserved");
+        Require(KsaUiLanguages.Runtime.MenuText("RCS") == "RCS"
+            && KsaUiLanguages.Runtime.MenuText("TWR") == "TWR"
+            && KsaUiLanguages.Runtime.MenuText("Unmapped-42") == "Unmapped-42", "Japanese abbreviations and fallback are preserved");
+        results.Add("PASS: Japanese native provider, named values and English fallback");
+        string[] menus = { "File", "File##main", "View###main-view" };
+        var japaneseMenus = menus.ToDictionary(s => s, KsaUiLanguages.Runtime.MenuText);
+        KsaUiLanguages.Runtime.ApplyLanguage("en-US");
+        foreach (string source in menus)
+            Require(HashGuiId(japaneseMenus[source], 0x735A1913) == HashGuiId(KsaUiLanguages.Runtime.MenuText(source), 0x735A1913),
+                "Japanese menu uses the same actual ImGui ID: " + source);
+        KsaUiLanguages.Runtime.ApplyLanguage("ja-JP");
+        results.Add("PASS: Japanese and English menus keep actual ImGui hashes stable");
+        var constructor = AccessTools.Constructor(typeof(KSA.WelcomePopup), Type.EmptyTypes);
+        string welcome = PatchProcessor.GetOriginalInstructions(constructor)
+            .Where(i => i.opcode == System.Reflection.Emit.OpCodes.Ldstr && i.operand is string)
+            .Select(i => (string)i.operand).Single(s => s.StartsWith("Welcome to the KSA pre-alpha.", StringComparison.Ordinal));
+        var native = KSA.StringTokenParser.Parse(welcome).ToArray();
+        var translated = KsaUiLanguages.WelcomeCaptionPatch.PrepareTokens(welcome, native, japanese.Utility[welcome]);
+        Require(!ReferenceEquals(native, translated)
+            && native.OfType<KSA.ActionStringToken>().Zip(translated.OfType<KSA.ActionStringToken>()).Count() == 9
+            && native.OfType<KSA.ActionStringToken>().Zip(translated.OfType<KSA.ActionStringToken>()).All(p => ReferenceEquals(p.First, p.Second)),
+            "Japanese welcome retains all real hotkey cards");
+        Require(string.Concat(translated.Where(t => t.GetType() == typeof(KSA.StringToken)).Select(t => t.Text))
+            == System.Text.RegularExpressions.Regex.Replace(japanese.Utility[welcome], @"<[^>]*>", ""), "Japanese welcome loses no visible text");
+        Require(KsaUiLanguages.WelcomeCaptionPatch.SplitChineseText("「カメラ」ロケットー。")
+            .SequenceEqual(new[] { "「カ", "メ", "ラ」", "ロ", "ケッ", "トー。" }), "Japanese wrapping handles kana, brackets, small kana and long vowel marks");
+        results.Add("PASS: Japanese welcome markup, original hotkeys and kana wrapping");
+        KsaUiLanguages.Runtime.ApplyLanguage("en-US");
+        Require(KSA.LStrings.SettingsDisplayResolution.Localized == KSA.LStrings.SettingsDisplayResolution.Template, "Japanese switches back to native English");
+        KsaUiLanguages.Runtime.ApplyLanguage("zh-CN");
+        Require(KSA.LStrings.SettingsDisplayResolution.Localized == "分辨率", "Japanese switches back to Chinese");
+        results.Add("PASS: Japanese, English and Chinese provider round trip");
     }
 
     private static void CheckAuxiliaryCaptions(List<string> results)

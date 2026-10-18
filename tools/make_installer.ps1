@@ -41,7 +41,7 @@ foreach ($taskArchive in $taskMetadata.archives) {
     }
     Copy-Item -LiteralPath $taskCached -Destination (Join-Path $taskPackage ('payload\' + $taskArchive.name))
 }
-$taskInstallerFiles = @('Install.ps1','Common.ps1','Launch.ps1','Uninstall.ps1','Install.cmd','Uninstall.cmd','README.zh-CN.txt','LICENSE.txt','dependencies.json')
+$taskInstallerFiles = @('Install.ps1','Common.ps1','Launch.ps1','Uninstall.ps1','Install.cmd','Uninstall.cmd','README.zh-CN.txt','README.ja.txt','README.en.txt','LICENSE.txt','dependencies.json')
 foreach ($taskName in $taskInstallerFiles) {
     $taskFrom = Join-Path $taskSource $taskName
     $taskTo = Join-Path $taskPackage $taskName

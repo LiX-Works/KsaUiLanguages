@@ -18,8 +18,8 @@ public static class WelcomeCaptionPatch
     private static readonly Regex ActionTag = new(@"<Action:(?<name>\w+)\s*/>", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
     private static readonly Regex AllTags = new(@"<[^>]*>", RegexOptions.CultureInvariant);
     private static readonly ConditionalWeakTable<WelcomePopup, Dictionary<string, PopupToken[]>> Cache = new();
-    private const string ClosingPunctuation = "，。！？；：、）】》”’…,.!?;:)]}";
-    private const string OpeningPunctuation = "（【《“‘([{\"";
+    private const string ClosingPunctuation = "，。！？；：、）】》」』”’…,.!?;:)]}ぁぃぅぇぉっゃゅょゎゕゖァィゥェォッャュョヮヵヶー々ゝゞヽヾ゙゚";
+    private const string OpeningPunctuation = "（【《「『“‘([{\"";
 
     public static string TitleText(string source) => source == "WELCOME" ? Runtime.UtilityText(source) : source;
 
@@ -65,17 +65,24 @@ public static class WelcomeCaptionPatch
         foreach (var rune in source.EnumerateRunes())
         {
             int code = rune.Value;
-            bool cjk = code is >= 0x3400 and <= 0x9fff or >= 0xf900 and <= 0xfaff or >= 0x20000 and <= 0x3134f;
+            // Japanese kana also wrap without spaces. Keep the public method
+            // name for existing callers and preserve Latin names as one token.
+            bool cjk = code is >= 0x3040 and <= 0x30ff or >= 0x31f0 and <= 0x31ff
+                or >= 0x3400 and <= 0x9fff or >= 0xf900 and <= 0xfaff or >= 0xff66 and <= 0xff9d
+                or >= 0x20000 and <= 0x3134f;
             string text = rune.ToString();
-            if (cjk)
+            if (ClosingPunctuation.Contains(text, StringComparison.Ordinal))
+            {
+                if (pending.Length > 0 || parts.Count == 0) pending += text;
+                else parts[^1] += text;
+            }
+            else if (cjk)
             {
                 if (pending.Length > 0 && pending.All(c => OpeningPunctuation.Contains(c)))
                     parts.Add(pending + text);
                 else { if (pending.Length > 0) parts.Add(pending); parts.Add(text); }
                 pending = "";
             }
-            else if (ClosingPunctuation.Contains(text, StringComparison.Ordinal) && pending.Length == 0 && parts.Count > 0)
-                parts[^1] += text;
             else pending += text;
         }
         if (pending.Length > 0) parts.Add(pending);

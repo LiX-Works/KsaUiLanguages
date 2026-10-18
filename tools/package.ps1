@@ -10,7 +10,7 @@ $taskAssets = Join-Path $taskProject 'assets\KsaUiLanguages'
 $taskExpectedFiles = @(
     'mod.toml', 'language.json', 'README.txt', 'LICENSE.txt',
     'FONT-LICENSE.txt', 'FONT-SOURCE.txt',
-    'Locales\en-US.json', 'Locales\zh-CN.json', 'Fonts\KsaUiNotoSC.ttf'
+    'Locales\en-US.json', 'Locales\zh-CN.json', 'Locales\ja-JP.json', 'Fonts\KsaUiNotoSC.ttf'
 )
 foreach ($taskFile in Get-ChildItem -LiteralPath $taskAssets -Recurse -File) {
     $taskRelative = $taskFile.FullName.Substring($taskAssets.Length + 1)
