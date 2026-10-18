@@ -6,6 +6,10 @@
 
 **Under the hood:** a runtime localization framework rather than a static text patch. Languages switch instantly in game; each language has a 1,625-entry dictionary with 748 semantic review notes; every supported game build passes 59 automated language and UI checks, and a compatibility probe pre-checks new game builds.
 
+![KSA flight view with the Simplified Chinese UI and the Language menu open, listing English, 日本語 and 简体中文](docs/images/language-menu-zh-CN.webp)
+
+*In flight with the Simplified Chinese UI. The Language menu switches among English, 日本語 and 简体中文.*
+
 **Current release: v0.6.0 preview. Supports Windows x64 and KSA 2026.10.7.5541 / 2026.10.10.5554.** This is a partial UI translation. Screens outside the translation framework and entries without a translation remain in English.
 
 ## Download and install
