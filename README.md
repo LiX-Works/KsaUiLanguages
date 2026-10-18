@@ -1,42 +1,44 @@
 # KSA UI Languages
 
-**简体中文** · [日本語](README.ja.md) · [English](README.en.md)
+**English** · [简体中文](README.zh-CN.md) · [日本語](README.ja.md)
 
-**Kitten Space Agency（KSA）是一款仍在开发中的太空模拟游戏。** 本语言包为设置、飞船编辑和常用飞行窗口提供简体中文与日文，也能切回英文。
+**Kitten Space Agency (KSA) is a space simulation game still in development.** This language pack adds Japanese and Simplified Chinese to settings, the vehicle editor, and common flight windows. You can also switch back to English.
 
-**当前版本：v0.6.0 预览版。支持 Windows 64 位及 KSA 2026.10.7.5541、2026.10.10.5554。** 这是部分界面翻译；尚未接入的内容和缺少译文的内容仍显示英文。
+**Under the hood:** a runtime localization framework rather than a static text patch. Languages switch instantly in game; each language has a 1,625-entry dictionary with 748 semantic review notes; every supported game build passes 59 automated language and UI checks, and a compatibility probe pre-checks new game builds.
 
-## 下载与安装
+**Current release: v0.6.0 preview. Supports Windows x64 and KSA 2026.10.7.5541 / 2026.10.10.5554.** This is a partial UI translation. Screens outside the translation framework and entries without a translation remain in English.
 
-[下载 v0.6.0](https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.6.0)，推荐选择 **KsaUiLanguages-0.6.0-installer5-win-x64.zip**。
+## Download and install
 
-1. 先安装上述对应版本的 KSA，确认原版能正常运行。
-2. 完整解压安装包，关闭游戏，双击 **Install.cmd**，选择包含 **KSA.dll** 的游戏目录。
-3. 从桌面 **“KSA 中文版 (5554)”** 或 **“KSA 中文版 (5541)”** 启动，名称取决于所选游戏版本。
-4. 游戏内通过 **Language → 日本語 / 简体中文 / English** 切换语言。
+[Download v0.6.0](https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.6.0) and choose **KsaUiLanguages-0.6.0-installer5-win-x64.zip**.
 
-安装提示和桌面入口名称目前仍为中文。加载器和私有运行时已包含在包内，可离线安装，无需管理员权限。请运行 Install.cmd；双击 Install.ps1 可能只会打开记事本。
+1. Install one of the exact supported KSA versions above and check that the original game runs.
+2. Extract the entire ZIP, close the game, and run **Install.cmd**. Select the game folder containing **KSA.dll**.
+3. Launch **“KSA 中文版 (5554)”** or **“KSA 中文版 (5541)”** from the desktop. The shortcut name depends on the game build you selected.
+4. In the game, choose **Language → 日本語 / 简体中文 / English**.
 
-**同一游戏版本更新语言包**：选择原来的游戏目录，设置和存档会保留。配置和旧插件会备份，安装器不会自动备份存档。
+The installer prompts and desktop shortcut names are currently in Chinese. At the license confirmation, choose **Yes / 是** to accept the bundled licenses and continue. The loader and a private runtime are included, so installation works offline without administrator rights. Use Install.cmd; double-clicking Install.ps1 may only open a text editor.
 
-**从 5541 换到 5554**：安装器会创建独立的 Build5554 实例，保留 Build5541。请保留两个游戏目录；安装器不会更新或备份游戏本体，也不会自动迁移旧存档。[详细安装、存档与卸载说明](docs/INSTALLER.md)
+**Updating the pack for the same game build:** select the original game folder. Settings and saves are preserved; configuration and the previous plugin are backed up. The installer does not automatically back up saves.
 
-## 语言与本版内容
+**Moving from 5541 to 5554:** the installer creates a separate Build5554 profile and preserves Build5541. Keep both game folders. It does not update or back up the game itself, or automatically migrate older saves. [Installation, save locations, and removal guide (Chinese)](docs/INSTALLER.md)
 
-- **三种语言**：新增日文，保留简体中文和原版英文。中、日词典各有 **1,625 条记录**，覆盖现有翻译框架中的设置、编辑器、常用 HUD、规划、轨迹、存档和提示等内容。
-- **日文欢迎页**：改善假名和日文标点换行，并补充显示所需的字体字符。
-- **保留熟悉的标识**：RCS、EVA、Isp、TWR、HUD、Δv 等常用缩写、单位、快捷键、部件型号和玩家自定义名称保留。
+## Languages and this update
 
-默认语言为简体中文。**Language 菜单中的选择只对本次运行生效**；若要更改启动默认值，修改安装实例中的 `instance/mods/KsaUiLanguages/language.json`，将 `locale` 设为 `ja-JP`、`zh-CN` 或 `en-US`。
+- **Three languages:** Japanese joins Simplified Chinese and the original English. Each Japanese and Chinese dictionary contains **1,625 entries**, covering the existing framework's settings, editor, common HUD, planning, tracking, save windows, and explanations.
+- **Japanese welcome text:** improved wrapping for kana and Japanese punctuation, with the required font characters added.
+- **Familiar labels stay recognizable:** common abbreviations such as RCS, EVA, Isp, TWR, HUD, and Δv, along with units, key bindings, part model numbers, and player-defined names, are preserved.
 
-## 检查与已知问题
+Simplified Chinese is the default. **Language menu choices last only for the current session.** To change the startup language, edit `locale` in the installed profile's `instance/mods/KsaUiLanguages/language.json` to `ja-JP`, `zh-CN`, or `en-US`.
 
-两个支持版本各通过 **59 项自动检查**，并在 5554 抽查了日文启动、加载和欢迎页。仍有英文内容，长文字和存档名可能截断；全部操作与长时间运行尚未全面验证。[详细检查记录与已知问题](docs/RELEASE_NOTES_v0.6.0.md)
+## Checks and known limits
 
-这是非官方社区语言包，**不含 KSA 游戏本体或 Starship 飞船模组**。后续公开版本按 v0.7.0、v0.8.0 递增，见[版本编号规则](docs/VERSIONING.md)。
+Both supported builds passed **59 automated checks each**, and selected Japanese startup, loading, and welcome screens were checked on 5554. Some content remains in English, and long labels or save names may clip. Not all operations have been tested, and long-session testing is incomplete. [Detailed checks and known issues](docs/RELEASE_NOTES_v0.6.0.md)
 
-## 校对与开源
+This is an unofficial community language pack. **It includes neither the KSA game nor the Starship vehicle mod.** Future public versions advance to v0.7.0, v0.8.0, and so on. [Versioning policy (Chinese)](docs/VERSIONING.md)
 
-[校对字典](docs/DICTIONARY.md) · [贡献翻译](CONTRIBUTING.md) · [开发与构建](docs/DEVELOPMENT.md) · [部件命名核查](docs/PART_NAMING_REVIEW.md)
+## Contributing and licenses
 
-独立代码和译文采用 **MIT**，字体采用 **SIL OFL**；加载器和运行时适用随附许可。[许可证与来源](THIRD_PARTY.md)
+[Review dictionary (Chinese)](docs/DICTIONARY.md) · [Contribute translations](CONTRIBUTING.md) · [Development and builds](docs/DEVELOPMENT.md) · [Part-name review (Chinese)](docs/PART_NAMING_REVIEW.md)
+
+Independently authored code and translations use **MIT**; the font uses **SIL OFL**. The loader and runtime retain their accompanying licenses. [Licenses and attribution](THIRD_PARTY.md)
