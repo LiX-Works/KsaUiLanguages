@@ -34,7 +34,7 @@
 .\tools\package.ps1
 ~~~
 
-生成 dist/KsaUiLanguages-0.7.0-build5541-5554.zip 和 SHA256SUMS.txt。打包使用新的 staging 目录与文件白名单，拒绝游戏/加载器 DLL。
+生成 dist/KsaUiLanguages-0.8.0-build5541-5554.zip 和 SHA256SUMS.txt。打包使用新的 staging 目录与文件白名单，拒绝游戏/加载器 DLL。
 
 若需要与当前 Git 提交严格对应的源码包，先提交所有准备发行的更改，再运行：
 
@@ -89,3 +89,6 @@ v0.6.0 在相同框架中加入 ja-JP.json，与中文各有 1,625 条记录。�
 
 
 v0.7.0 让 Language 菜单的选择写回 `language.json`，下次启动沿用；写入先用临时文件再替换，失败只记日志。安装器（installer 6）的提示、启动器和卸载器改为英文，桌面入口改名为“KSA UI Languages (版本号)”，旧“KSA 中文版”入口在安装提交后移除；新增 `-Locale`，启动语言按“显式参数 > 原安装的 language.json > Windows 显示语言”确定。同一发行插件在两个支持版本各通过 60 项语言与控件检查（新增菜单选择保存）；安装器检查在 5541 通过 25 项、5554 通过 23 项。检查脚本读取 JSON 时显式使用 UTF-8，避免 Windows PowerShell 5.1 在中文代码页下误读 Unicode 路径。日文专用字体仍未加入：所有语言共用启动时生成的字体图集，切换语言时不会重建。
+
+
+v0.8.0 新增英文安装指南 docs/INSTALLER.en.md，英文与日文首页的安装说明链接改指向它；插件功能与 v0.7.0 相同，重新构建后同样通过两版各 60 项语言检查及安装器检查。

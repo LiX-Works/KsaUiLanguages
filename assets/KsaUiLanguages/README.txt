@@ -1,10 +1,10 @@
-KSA UI Languages v0.7.0 — 简体中文 / 日本語 / English
+KSA UI Languages v0.8.0 — 简体中文 / 日本語 / English
 
 Kitten Space Agency（KSA）是一款仍在开发中的太空模拟游戏。
 本包提供部分中文与日文界面，并可切回英文。
 支持 Windows x64、KSA 2026.10.7.5541 和 2026.10.10.5554。
 
-推荐安装：完整解压 KsaUiLanguages-0.7.0-installer6-win-x64.zip，
+推荐安装：完整解压 KsaUiLanguages-0.8.0-installer6-win-x64.zip，
 关闭游戏，运行 Install.cmd，选择包含 KSA.dll 的游戏目录。
 从桌面“KSA UI Languages (5554)”或“KSA UI Languages (5541)”启动。
 安装提示为英文，包内附中、日、英说明。无需管理员权限。
@@ -49,4 +49,4 @@ Long text may clip; full gameplay and long-term stability are not verified.
 代码/译文 MIT；字体 SIL OFL；许可证和来源在包内。
 Code/translations: MIT. Font: SIL OFL. No KSA game or Starship mod is included.
 https://github.com/LiX-Works/KsaUiLanguages
-https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.7.0
+https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.8.0

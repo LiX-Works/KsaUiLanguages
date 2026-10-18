@@ -1,6 +1,8 @@
 # 离线安装与更新
 
-[下载 v0.7.0](https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.7.0)，选择 **KsaUiLanguages-0.7.0-installer6-win-x64.zip**。包内含汉化插件、StarMap 0.4.7 和私有 .NET 10.0.12 Runtime，不含游戏本体。
+[English](INSTALLER.en.md) · **简体中文**
+
+[下载 v0.8.0](https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.8.0)，选择 **KsaUiLanguages-0.8.0-installer6-win-x64.zip**。包内含汉化插件、StarMap 0.4.7 和私有 .NET 10.0.12 Runtime，不含游戏本体。
 
 ## 安装
 
@@ -50,4 +52,4 @@
 .\tools\check_installer.ps1 -GameDir 'C:\Games\KSA-5554' -OtherGameDir 'C:\Games\KSA-5541'
 ~~~
 
-输出dist/KsaUiLanguages-0.7.0-installer6-win-x64.zip。脚本复用校验过的本地插件及依赖缓存；加载器和运行时来自锁定官方URL，核对SHA-256，运行时另核对SHA-512。包内PS1为UTF-8 BOM，CMD为Windows换行，兼容系统PowerShell5.1。
+输出dist/KsaUiLanguages-0.8.0-installer6-win-x64.zip。脚本复用校验过的本地插件及依赖缓存；加载器和运行时来自锁定官方URL，核对SHA-256，运行时另核对SHA-512。包内PS1为UTF-8 BOM，CMD为Windows换行，兼容系统PowerShell5.1。

@@ -6,13 +6,13 @@
     "2026.10.7.5541",
     "2026.10.10.5554"
   ],
-  "pluginVersion": "0.7.0",
+  "pluginVersion": "0.8.0",
   "archives": [
     {
       "name": "plugin.zip",
-      "version": "0.7.0",
-      "source": "https://github.com/LiX-Works/KsaUiLanguages/releases/download/v0.7.0/KsaUiLanguages-0.7.0-build5541-5554.zip",
-      "sha256": "d5655b9f43f2bfbf1d09b7acc7389cae17beb86c2faba36dd61b13b1099194b1"
+      "version": "0.8.0",
+      "source": "https://github.com/LiX-Works/KsaUiLanguages/releases/download/v0.8.0/KsaUiLanguages-0.8.0-build5541-5554.zip",
+      "sha256": "be4442eb8ecaeaa8dff3c7bc5a19efa587c76b3c128a4d5ed144a9a9c7541b36"
     },
     {
       "name": "loader.zip",

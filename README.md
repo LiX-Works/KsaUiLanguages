@@ -10,11 +10,11 @@
 
 *In flight with the Simplified Chinese UI. The Language menu switches among English, 日本語 and 简体中文.*
 
-**Current release: v0.7.0 preview. Supports Windows x64 and KSA 2026.10.7.5541 / 2026.10.10.5554.** This is a partial UI translation. Screens outside the translation framework and entries without a translation remain in English.
+**Current release: v0.8.0 preview. Supports Windows x64 and KSA 2026.10.7.5541 / 2026.10.10.5554.** This is a partial UI translation. Screens outside the translation framework and entries without a translation remain in English.
 
 ## Download and install
 
-[Download v0.7.0](https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.7.0) and choose **KsaUiLanguages-0.7.0-installer6-win-x64.zip**.
+[Download v0.8.0](https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.8.0) and choose **KsaUiLanguages-0.8.0-installer6-win-x64.zip**.
 
 1. Install one of the exact supported KSA versions above and check that the original game runs.
 2. Extract the entire ZIP, close the game, and run **Install.cmd**. Select the game folder containing **KSA.dll**.
@@ -25,9 +25,13 @@ At the license confirmation, choose **Yes** to accept the bundled licenses and c
 
 **Updating the pack for the same game build:** select the original game folder. Settings, saves, and the startup language are preserved; configuration and the previous plugin are backed up. The installer does not automatically back up saves. Updating from v0.6.0 or earlier replaces the old “KSA 中文版” desktop shortcut with the new name.
 
-**Moving from 5541 to 5554:** the installer creates a separate Build5554 profile and preserves Build5541. Keep both game folders. It does not update or back up the game itself, or automatically migrate older saves. [Installation, save locations, and removal guide (Chinese)](docs/INSTALLER.md)
+**Moving from 5541 to 5554:** the installer creates a separate Build5554 profile and preserves Build5541. Keep both game folders. It does not update or back up the game itself, or automatically migrate older saves. [Installation, save locations, and removal guide](docs/INSTALLER.en.md)
 
-## What's new in v0.7.0
+## What's new
+
+- **v0.8.0 — English installation guide:** the full installation, update, and removal guide is now available in English ([docs/INSTALLER.en.md](docs/INSTALLER.en.md)).
+
+From v0.7.0:
 
 - **Your language choice is remembered:** picking a language from the Language menu also makes it the startup language.
 - **English installer:** installer, launcher, and uninstaller messages are in English, and the desktop shortcut is named “KSA UI Languages (build)”.
@@ -43,9 +47,9 @@ The startup language is stored as `locale` (`ja-JP`, `zh-CN`, or `en-US`) in the
 
 ## Checks and known limits
 
-The same release plugin passed **60 automated language and UI checks** on each supported build, and the installer passed **25 (5541) and 23 (5554) isolated install, update, and uninstall checks**. Some content remains in English, long labels or save names may clip, and Japanese text uses the shared Noto Sans SC font, so some kanji show Chinese glyph shapes. Not all operations have been tested, and long-session testing is incomplete. [Detailed checks and known issues](docs/RELEASE_NOTES_v0.7.0.md)
+The same release plugin passed **60 automated language and UI checks** on each supported build, and the installer passed **25 (5541) and 23 (5554) isolated install, update, and uninstall checks**. Some content remains in English, long labels or save names may clip, and Japanese text uses the shared Noto Sans SC font, so some kanji show Chinese glyph shapes. Not all operations have been tested, and long-session testing is incomplete. [Detailed checks and known issues](docs/RELEASE_NOTES_v0.8.0.md)
 
-This is an unofficial community language pack. **It includes neither the KSA game nor the Starship vehicle mod.** Future public versions advance to v0.8.0, v0.9.0, and so on. [Versioning policy (Chinese)](docs/VERSIONING.md)
+This is an unofficial community language pack. **It includes neither the KSA game nor the Starship vehicle mod.** Future public versions advance in steps of 0.1. [Versioning policy (Chinese)](docs/VERSIONING.md)
 
 ## Contributing and licenses
 

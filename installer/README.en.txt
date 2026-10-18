@@ -1,4 +1,4 @@
-KSA UI Languages v0.7.0 — English installation guide
+KSA UI Languages v0.8.0 — English installation guide
 
 Kitten Space Agency (KSA) is a space simulation game still in development.
 This unofficial pack adds partial Japanese and Simplified Chinese UI translations,
@@ -6,7 +6,7 @@ with an English option. It supports Windows x64 and these exact KSA versions:
 2026.10.7.5541 / 2026.10.10.5554. Install the game separately first.
 
 Quick start
-1. Extract the entire KsaUiLanguages-0.7.0-installer6-win-x64.zip.
+1. Extract the entire KsaUiLanguages-0.8.0-installer6-win-x64.zip.
 2. Close the game and double-click Install.cmd, not Install.ps1.
 3. The folder picker asks for your game folder. Select the folder
    containing KSA.dll and confirm the selection.
@@ -46,6 +46,6 @@ migration have not been fully tested. Independent code/translations: MIT;
 font: SIL OFL; third-party components retain their own licenses.
 
 Full guide:
-https://github.com/LiX-Works/KsaUiLanguages/blob/v0.7.0/README.md
+https://github.com/LiX-Works/KsaUiLanguages/blob/v0.8.0/README.md
 Downloads:
-https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.7.0
+https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.8.0
