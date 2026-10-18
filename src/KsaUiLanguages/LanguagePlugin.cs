@@ -154,6 +154,25 @@ public static class Runtime
         Log($"Language {locale}: {Translations.Count} native, {pack.Literals.Count} literals, {pack.Ui.Count} UI labels, {pack.Tooltips.Count} tooltips, {pack.Editor.Count} editor labels, {pack.Startup.Count} startup labels, {pack.Parts.Count} part names, {pack.Controls.Count} control captions, {pack.Hud.Count} HUD captions, {pack.Planning.Count} planning captions, {pack.Utility.Count} utility captions.");
     }
 
+    // Remember a language picked from the menu so the next launch starts in it.
+    public static void SaveSelectedLocale()
+    {
+        var configPath = Path.Combine(ModRoot, "language.json");
+        var temporary = configPath + ".tmp";
+        try
+        {
+            var json = JsonSerializer.Serialize(new { locale = SelectedLocale }, new JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText(temporary, json + Environment.NewLine, new UTF8Encoding(false));
+            File.Move(temporary, configPath, overwrite: true);
+            Log($"Saved startup language {SelectedLocale}.");
+        }
+        catch (Exception error)
+        {
+            Log("Could not save the startup language: " + error.Message);
+            try { if (File.Exists(temporary)) File.Delete(temporary); } catch (IOException) { }
+        }
+    }
+
     private static IEnumerable<string> Tokens(string text) => Regex.Matches(text, @"\{[^{}]+\}")
         .Select(match => match.Value).Order(StringComparer.Ordinal);
 
@@ -608,7 +627,10 @@ public static class LanguageMenuPatch
         foreach (var pack in Runtime.Packs.Values)
         {
             if (ImGui.MenuItem(pack.DisplayName, default(ImString), Runtime.SelectedLocale == pack.Locale))
+            {
                 Runtime.ApplyLanguage(pack.Locale);
+                Runtime.SaveSelectedLocale();
+            }
         }
         ImGui.EndMenu();
     }

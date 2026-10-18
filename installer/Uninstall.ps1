@@ -9,12 +9,12 @@ function Assert-TaskUninstallLoaderStopped([string]$Root) {
     $taskProcesses = @(Get-CimInstance Win32_Process -Filter "Name='StarMap.exe'")
     foreach ($taskProcess in $taskProcesses) {
         if ([string]::IsNullOrWhiteSpace([string]$taskProcess.ExecutablePath)) {
-            throw '无法确认正在运行的 StarMap 所属安装。请关闭 StarMap 后再卸载。'
+            throw 'Cannot tell which installation the running StarMap belongs to. Close StarMap, then uninstall.'
         }
         $taskExecutable = [IO.Path]::GetFullPath([string]$taskProcess.ExecutablePath)
         $taskPrefix = $Root.TrimEnd('\') + '\'
         if ($taskExecutable.StartsWith($taskPrefix, [StringComparison]::OrdinalIgnoreCase)) {
-            throw '本安装的游戏或加载器仍在运行。请关闭游戏后再卸载。'
+            throw 'The game or loader for this installation is still running. Close the game, then uninstall.'
         }
     }
 }
@@ -28,17 +28,17 @@ try {
     $taskState = $null
     if (Test-Path -LiteralPath $taskStatePath -PathType Leaf) {
         $taskState = Get-Content -Encoding UTF8 -LiteralPath $taskStatePath -Raw | ConvertFrom-Json
-        if ($taskState.productId -ne $TaskProductId) { throw '安装信息不属于本产品，已停止卸载。' }
+        if ($taskState.productId -ne $TaskProductId) { throw 'The installation information does not belong to this product; uninstall stopped.' }
     }
     if (Test-Path -LiteralPath $taskDeployments) {
-        if (!(Test-Path -LiteralPath $taskDeployments -PathType Container)) { throw '部署目录不是文件夹，已停止卸载。' }
+        if (!(Test-Path -LiteralPath $taskDeployments -PathType Container)) { throw 'The deployments path is not a folder; uninstall stopped.' }
         Assert-TaskNoReparsePoints -Path $taskDeployments
     }
     Assert-TaskUninstallLoaderStopped -Root $taskRoot
     if (!$NonInteractive) {
         Add-Type -AssemblyName System.Windows.Forms
-        $taskPrompt = "将移除本安装的加载器、私有运行时及部署文件。`n独立实例内的设置、存档，以及 backups 备份将保留。`n不会改动游戏目录或原玩家文档。`n`n安装位置：$taskRoot`n`n是否继续？"
-        $taskChoice = [Windows.Forms.MessageBox]::Show($taskPrompt, '卸载 KSA 中文界面',
+        $taskPrompt = "This removes the loader, private runtime and deployment files of this installation.`nSettings and saves in the separate instance, and the backups folder, are kept.`nThe game folder and your original player documents are not changed.`n`nInstallation: $taskRoot`n`nContinue?"
+        $taskChoice = [Windows.Forms.MessageBox]::Show($taskPrompt, 'Uninstall KSA UI Languages',
             [Windows.Forms.MessageBoxButtons]::OKCancel, [Windows.Forms.MessageBoxIcon]::Question,
             [Windows.Forms.MessageBoxDefaultButton]::Button2)
         if ($taskChoice -ne [Windows.Forms.DialogResult]::OK) { Write-Output 'CANCELLED'; return }
@@ -57,10 +57,10 @@ try {
         $taskShell = $null
         $taskShortcut = $null
         try {
-            if ([IO.Path]::GetExtension($taskShortcutPath) -ine '.lnk') { throw '记录的快捷方式不是 .lnk，已保留。' }
+            if ([IO.Path]::GetExtension($taskShortcutPath) -ine '.lnk') { throw 'The recorded shortcut is not a .lnk file and was kept.' }
             if (Test-Path -LiteralPath $taskShortcutPath -PathType Leaf) {
                 $taskShortcutItem = Get-Item -LiteralPath $taskShortcutPath -Force
-                if ($taskShortcutItem.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw '快捷方式是重解析点，已保留。' }
+                if ($taskShortcutItem.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'The shortcut is a reparse point and was kept.' }
                 $taskShell = New-Object -ComObject WScript.Shell
                 $taskShortcut = $taskShell.CreateShortcut($taskShortcutPath)
                 $taskShortcutTarget = [string]$taskShortcut.TargetPath
@@ -69,12 +69,12 @@ try {
                 $taskExpectedScript = Join-Path $taskRoot 'Launch.ps1'
                 $taskArgumentPattern = '^\s*(?:(?:-NoProfile|-NoLogo|-NonInteractive|-Sta|-ExecutionPolicy\s+Bypass|-WindowStyle\s+(?:Hidden|Normal))\s+)*-File\s+(?:"(?<quoted>[^"]+)"|(?<unquoted>\S+))\s*$'
                 $taskMatch = [regex]::Match($taskShortcutArguments, $taskArgumentPattern, [Text.RegularExpressions.RegexOptions]::IgnoreCase)
-                if (!$taskMatch.Success) { throw '快捷方式参数无法证明归属，已保留。' }
+                if (!$taskMatch.Success) { throw 'The shortcut arguments do not show it belongs to this installation, so it was kept.' }
                 $taskScript = $taskMatch.Groups['quoted'].Value
                 if (!$taskScript) { $taskScript = $taskMatch.Groups['unquoted'].Value }
                 if (![string]::Equals([IO.Path]::GetFullPath($taskShortcutTarget), [IO.Path]::GetFullPath($taskExpectedHost), [StringComparison]::OrdinalIgnoreCase) -or
                     ![string]::Equals([IO.Path]::GetFullPath($taskScript), [IO.Path]::GetFullPath($taskExpectedScript), [StringComparison]::OrdinalIgnoreCase)) {
-                    throw '快捷方式不指向本安装的启动器，已保留。'
+                    throw 'The shortcut does not point to this installation''s launcher and was kept.'
                 }
                 [Runtime.InteropServices.Marshal]::FinalReleaseComObject($taskShortcut) | Out-Null
                 $taskShortcut = $null
@@ -103,13 +103,13 @@ try {
         shortcutNotice = $taskShortcutNotice
     } | ConvertTo-Json
     if (!$NonInteractive) {
-        $taskMessage = '卸载完成。独立实例的设置、存档和备份已保留。'
+        $taskMessage = 'Uninstall complete. Settings, saves and backups in the separate instance were kept.'
         if ($taskShortcutNotice) { $taskMessage += "`n$taskShortcutNotice" }
         Show-TaskMessage -Message $taskMessage -NonInteractive:$NonInteractive
     }
 }
 catch {
-    $taskMessage = '卸载失败：' + $_.Exception.Message
+    $taskMessage = 'Uninstall failed: ' + $_.Exception.Message
     if (Get-Command Show-TaskMessage -ErrorAction SilentlyContinue) {
         Show-TaskMessage -Message $taskMessage -NonInteractive:$NonInteractive -Error
     }

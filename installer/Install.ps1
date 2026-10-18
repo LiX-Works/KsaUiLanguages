@@ -3,7 +3,8 @@ param(
     [string]$InstallRoot = '',
     [switch]$NonInteractive,
     [switch]$NoShortcut,
-    [switch]$AcceptLicenses
+    [switch]$AcceptLicenses,
+    [string]$Locale = ''
 )
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'Common.ps1')
@@ -15,10 +16,12 @@ $taskModFilesBefore = @{}
 $taskRootFilesBefore = @{}
 $taskShortcutTouched = $false
 $taskShortcutWasPresent = $false
+$taskLegacyShortcut = $null
 $taskNL = [Environment]::NewLine
 try {
     if ($NonInteractive -and !$AcceptLicenses) { throw 'Noninteractive installation requires -AcceptLicenses after reviewing the included license files.' }
-    if (![Environment]::Is64BitOperatingSystem -or ![Environment]::Is64BitProcess) { throw '本安装包需要 64 位 Windows 和 64 位 PowerShell。' }
+    if ($Locale -and $Locale -notin @('zh-CN','ja-JP','en-US')) { throw "Unsupported -Locale '$Locale'. Use zh-CN, ja-JP or en-US." }
+    if (![Environment]::Is64BitOperatingSystem -or ![Environment]::Is64BitProcess) { throw 'This installer requires 64-bit Windows and 64-bit PowerShell.' }
     $taskPackage = Get-Content -Encoding UTF8 -Raw -LiteralPath (Join-Path $PSScriptRoot 'package.json') | ConvertFrom-Json
     $taskSupportedVersions = @(Get-TaskPackageGameVersions -Package $taskPackage)
     $taskExistingState = $null
@@ -33,7 +36,7 @@ try {
         if ($NonInteractive) { throw 'Noninteractive installation requires -GameDir.' }
         Add-Type -AssemblyName System.Windows.Forms
         $taskDialog = New-Object Windows.Forms.FolderBrowserDialog
-        $taskDialog.Description = '选择 KSA 5541 或 5554 的游戏安装目录（包含 KSA.dll）'
+        $taskDialog.Description = 'Select the KSA 5541 or 5554 game folder (the one containing KSA.dll)'
         $taskDialog.ShowNewFolderButton = $false
         if ($taskExistingState -and (Test-Path -LiteralPath $taskExistingState.gameDir)) { $taskDialog.SelectedPath = $taskExistingState.gameDir }
         else {
@@ -47,9 +50,9 @@ try {
     }
     $GameDir = [IO.Path]::GetFullPath($GameDir).TrimEnd('\','/')
     $taskVersion = Get-TaskGameVersion -GameDir $GameDir
-    if ($taskVersion -notin $taskSupportedVersions) { throw "此汉化只支持 $($taskSupportedVersions -join '、')；选中的游戏版本是 $taskVersion。" }
+    if ($taskVersion -notin $taskSupportedVersions) { throw "This language pack supports only KSA $($taskSupportedVersions -join ' and '); the selected game is $taskVersion." }
     $taskBuild = ([version]$taskVersion).Revision
-    $taskShortcutName = "KSA 中文版 ($taskBuild)"
+    $taskShortcutName = "KSA UI Languages ($taskBuild)"
     if (!$InstallRoot) { $InstallRoot = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) ("KsaUiLanguages\Build$taskBuild") }
     $taskRoot = Assert-TaskSafeRoot -Root $InstallRoot
     if ((Test-Path -LiteralPath $taskRoot) -and @(Get-ChildItem -LiteralPath $taskRoot -Force).Count) {
@@ -60,12 +63,12 @@ try {
             if ($taskExistingState.productId -ne $TaskProductId) { throw 'Installation state does not belong to this product.' }
         }
         $taskOwnedVersion = Get-TaskInstallationGameVersion -Root $taskRoot -State $taskExistingState
-        if ($taskOwnedVersion -ne $taskVersion) { throw "此安装目录属于 KSA $taskOwnedVersion，不能用于 $taskVersion。请选择新的安装目录，以保留原实例的存档与配置。" }
+        if ($taskOwnedVersion -ne $taskVersion) { throw "This installation folder belongs to KSA $taskOwnedVersion and cannot be used for $taskVersion. Choose a new installation folder to keep the existing settings and saves." }
     }
     foreach ($taskProcess in @(Get-CimInstance Win32_Process -Filter "Name = 'StarMap.exe'")) {
-        if ([string]::IsNullOrWhiteSpace([string]$taskProcess.ExecutablePath)) { throw '无法确认正在运行的 StarMap 所属目录。请先关闭 StarMap，再安装。' }
+        if ([string]::IsNullOrWhiteSpace([string]$taskProcess.ExecutablePath)) { throw 'Cannot tell which folder the running StarMap belongs to. Close StarMap and run the installer again.' }
         if ($taskProcess.ExecutablePath -and $taskProcess.ExecutablePath.StartsWith($taskRoot + '\', [StringComparison]::OrdinalIgnoreCase)) {
-            throw '本安装的游戏正在运行，请先关闭，再安装或更新。'
+            throw 'The game for this installation is running. Close it before installing or updating.'
         }
     }
     if (@($taskPackage.archives).Count -ne 3 -or @($taskPackage.archives.name | Sort-Object -Unique).Count -ne 3) { throw 'Installer must include exactly three unique payload archives.' }
@@ -73,13 +76,28 @@ try {
         if ($taskArchive.name -notin @('plugin.zip','loader.zip','runtime.zip') -or $taskArchive.sha256 -notmatch '^[0-9a-f]{64}$') { throw 'Invalid payload entry.' }
         $taskPayload = Join-Path $PSScriptRoot ('payload\' + $taskArchive.name)
         if ((Get-FileHash -LiteralPath $taskPayload -Algorithm SHA256).Hash.ToLowerInvariant() -ne $taskArchive.sha256) {
-            throw "安装包文件校验失败：$($taskArchive.name)。请重新解压或下载。"
+            throw "Installer file check failed: $($taskArchive.name). Extract or download the installer again."
         }
     }
+    # Startup language: an explicit -Locale wins, then the language kept by an earlier
+    # installation (also what players last chose in game), then the Windows display language.
+    $taskLocale = $Locale
+    $taskExistingLocaleFile = Join-Path $taskRoot 'instance\mods\KsaUiLanguages\language.json'
+    if (!$taskLocale -and (Test-Path -LiteralPath $taskExistingLocaleFile -PathType Leaf)) {
+        try { $taskLocale = [string](Get-Content -Encoding UTF8 -Raw -LiteralPath $taskExistingLocaleFile | ConvertFrom-Json).locale } catch { $taskLocale = '' }
+        if ($taskLocale -notin @('zh-CN','ja-JP','en-US')) { $taskLocale = '' }
+    }
+    if (!$taskLocale) {
+        $taskCulture = [Globalization.CultureInfo]::CurrentUICulture.Name
+        if ($taskCulture -like 'ja*') { $taskLocale = 'ja-JP' }
+        elseif ($taskCulture -like 'zh*') { $taskLocale = 'zh-CN' }
+        else { $taskLocale = 'en-US' }
+    }
+    $taskLanguageNames = @{ 'zh-CN' = 'Simplified Chinese'; 'ja-JP' = 'Japanese'; 'en-US' = 'English' }
     if (!$NonInteractive) {
         Add-Type -AssemblyName System.Windows.Forms
-        $taskPrompt = [string]::Join($taskNL, @("游戏：$GameDir",'',"安装位置：$taskRoot",'','使用独立配置与存档；将创建“中文版”桌面快捷方式。','','继续表示同意随附 MIT、SIL OFL 和 Microsoft .NET 许可。','许可证位于安装包的 LICENSE.txt、licenses 目录和插件包中。','是否接受许可并开始安装？'))
-        if ([Windows.Forms.MessageBox]::Show($taskPrompt, 'KSA 中文版', [Windows.Forms.MessageBoxButtons]::YesNo,
+        $taskPrompt = [string]::Join($taskNL, @("Game: $GameDir",'',"Install to: $taskRoot",'',"Startup language: $($taskLanguageNames[$taskLocale])",'Switch languages any time from the Language menu in game; your choice is remembered.','',"Uses separate settings and saves, and creates the desktop shortcut ""$taskShortcutName"".",'','Continuing means you accept the bundled MIT, SIL OFL and Microsoft .NET licenses,','found in LICENSE.txt, the licenses folder and the plugin package.','Accept the licenses and install?'))
+        if ([Windows.Forms.MessageBox]::Show($taskPrompt, 'KSA UI Languages', [Windows.Forms.MessageBoxButtons]::YesNo,
             [Windows.Forms.MessageBoxIcon]::Question) -ne [Windows.Forms.DialogResult]::Yes) { exit 0 }
     }
     New-Item -ItemType Directory -Path $taskRoot -Force | Out-Null
@@ -115,7 +133,7 @@ try {
     if (Test-Path -LiteralPath (Join-Path $taskRoot 'install-state.json')) { Copy-Item -LiteralPath (Join-Path $taskRoot 'install-state.json') -Destination $taskBackup }
     $taskScriptsBackup = Join-Path $taskBackup 'scripts'
     New-Item -ItemType Directory -Path $taskScriptsBackup -Force | Out-Null
-    foreach ($taskScript in @('Common.ps1','Launch.ps1','Uninstall.ps1','Uninstall.cmd','README.zh-CN.txt')) {
+    foreach ($taskScript in @('Common.ps1','Launch.ps1','Uninstall.ps1','Uninstall.cmd','README.en.txt','README.ja.txt','README.zh-CN.txt')) {
         $taskTarget = Join-Path $taskRoot $taskScript
         $taskRootFilesBefore[$taskTarget] = Test-Path -LiteralPath $taskTarget -PathType Leaf
         if ($taskRootFilesBefore[$taskTarget]) { Copy-Item -LiteralPath $taskTarget -Destination $taskScriptsBackup }
@@ -128,13 +146,15 @@ try {
     }
     New-Item -ItemType Directory -Path $taskModTarget -Force | Out-Null
     Copy-Item -Path (Join-Path $taskModStage 'KsaUiLanguages\*') -Destination $taskModTarget -Recurse -Force
+    # The plugin ships a default language.json; replace it with the chosen startup language.
+    Write-TaskJson -Path (Assert-TaskChildPath -Root $taskRoot -Path (Join-Path $taskModTarget 'language.json')) -Value @{locale=$taskLocale}
     $taskManifestText = Get-Content -Encoding UTF8 -Raw -LiteralPath (Join-Path $GameDir 'Content\manifest.toml')
     if ($taskManifestWasPresent) { $taskManifestText = Get-Content -Encoding UTF8 -Raw -LiteralPath $taskManifest }
     $taskManifestText = Enable-TaskLanguageMod -Text $taskManifestText
     [IO.File]::WriteAllText($taskManifest, $taskManifestText, [Text.UTF8Encoding]::new($false))
     Write-TaskJson -Path (Join-Path $taskLoader 'StarMapConfig.json') -Value @{GameLocation=$GameDir;RepositoryLocation='';GameArguments=@()}
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'licenses') -Destination $taskDeployment -Recurse
-    foreach ($taskScript in @('Common.ps1','Launch.ps1','Uninstall.ps1','Uninstall.cmd','README.zh-CN.txt')) {
+    foreach ($taskScript in @('Common.ps1','Launch.ps1','Uninstall.ps1','Uninstall.cmd','README.en.txt','README.ja.txt','README.zh-CN.txt')) {
         Copy-Item -LiteralPath (Join-Path $PSScriptRoot $taskScript) -Destination $taskRoot -Force
     }
     $taskShortcut = ''
@@ -150,6 +170,12 @@ try {
         if ($taskPreviousLinkItem -and !($taskPreviousLinkItem.Attributes -band [IO.FileAttributes]::ReparsePoint) -and [IO.Path]::GetExtension($taskShortcut) -ieq '.lnk' -and !$taskPreviousLinkItem.PSIsContainer) {
             $taskExistingLink = $taskShell.CreateShortcut($taskShortcut)
             $taskReuseShortcut = $taskExistingLink.TargetPath -ieq $taskHostPath -and $taskExistingLink.Arguments -ieq $taskShortcutArguments
+            # Shortcuts from installers 1-5 were named "KSA 中文版 (build)". Create the new name
+            # and remove the old link only after the installation is committed.
+            if ($taskReuseShortcut -and [IO.Path]::GetFileNameWithoutExtension($taskShortcut) -notlike ($taskShortcutName + '*')) {
+                $taskLegacyShortcut = $taskShortcut
+                $taskReuseShortcut = $false
+            }
         }
         if (!$taskReuseShortcut) { $taskShortcut = Join-Path $taskDesktop ($taskShortcutName + '.lnk') }
         $taskOldLinkItem = Get-Item -LiteralPath $taskShortcut -Force -ErrorAction SilentlyContinue
@@ -169,7 +195,7 @@ try {
         $taskLink.TargetPath = $taskHostPath
         $taskLink.Arguments = $taskShortcutArguments
         $taskLink.WorkingDirectory = $taskRoot
-        $taskLink.Description = "KSA $taskBuild 简体中文，独立配置与存档"
+        $taskLink.Description = "KSA $taskBuild with UI languages (separate settings and saves)"
         $taskLink.IconLocation = (Join-Path $taskLoader 'StarMap.exe') + ',0'
         $taskShortcutTouched = $true
         $taskLink.Save()
@@ -181,7 +207,17 @@ try {
     }
     Write-TaskJson -Path (Join-Path $taskRoot '.ownership.json') -Value @{productId=$TaskProductId;rootPath=$taskRoot;gameVersion=$taskVersion}
     $taskCommitted = $true
-    $taskDone = [string]::Join($taskNL, @('安装完成。','',('请从桌面“{0}”启动。' -f $taskShortcutName),'菜单栏可选择 Language / 语言。','',"配置与存档：$taskInstance","卸载：$taskRoot\Uninstall.cmd"))
+    if ($taskLegacyShortcut -and ![string]::Equals($taskLegacyShortcut, $taskShortcut, [StringComparison]::OrdinalIgnoreCase)) {
+        try {
+            $taskLegacyItem = Get-Item -LiteralPath $taskLegacyShortcut -Force -ErrorAction SilentlyContinue
+            if ($taskLegacyItem -and !$taskLegacyItem.PSIsContainer -and !($taskLegacyItem.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+                Remove-Item -LiteralPath $taskLegacyShortcut -Force
+            }
+        } catch { Write-Host ('Could not remove the old desktop shortcut: ' + $_.Exception.Message) }
+    }
+    $taskLaunchHint = 'Start the game from the desktop shortcut "{0}".' -f $taskShortcutName
+    if ($NoShortcut) { $taskLaunchHint = "Start the game with $taskRoot\Launch.ps1." }
+    $taskDone = [string]::Join($taskNL, @('Installation complete.','',$taskLaunchHint,"Startup language: $($taskLanguageNames[$taskLocale]). Use the Language menu in game to switch; your choice is remembered.",'',"Settings and saves: $taskInstance","Uninstall: $taskRoot\Uninstall.cmd"))
     Show-TaskMessage -Message $taskDone -NonInteractive:$NonInteractive
 }
 catch {
@@ -218,6 +254,6 @@ catch {
             Copy-Item -LiteralPath (Join-Path $taskBackup 'install-state.json') -Destination (Join-Path $taskRoot 'install-state.json') -Force
         }
     }
-    Show-TaskMessage -Message ('安装未完成：' + $taskNL + $taskFailureMessage) -NonInteractive:$NonInteractive -Error
+    Show-TaskMessage -Message ('Installation was not completed:' + $taskNL + $taskFailureMessage) -NonInteractive:$NonInteractive -Error
     exit 1
 }

@@ -231,6 +231,23 @@ internal static class Program
         Require(KSA.LStrings.SettingsDisplayResolution.Localized == "分辨率", "Chinese can be restored");
         Require(KSA.LStrings.AlertTargetSet.Localized.Contains("{Target}"), "Named placeholder is retained");
         results.Add("PASS: Round trip and named placeholder");
+        var languageFile = Path.Combine(KsaUiLanguages.Runtime.ModRoot, "language.json");
+        var languageBefore = File.Exists(languageFile) ? File.ReadAllText(languageFile) : null;
+        try
+        {
+            KsaUiLanguages.Runtime.ApplyLanguage("ja-JP");
+            KsaUiLanguages.Runtime.SaveSelectedLocale();
+            using var saved = JsonDocument.Parse(File.ReadAllText(languageFile));
+            Require(saved.RootElement.GetProperty("locale").GetString() == "ja-JP" && !File.Exists(languageFile + ".tmp"),
+                "A language picked from the menu is saved as the next startup language");
+        }
+        finally
+        {
+            if (languageBefore is null) File.Delete(languageFile);
+            else File.WriteAllText(languageFile, languageBefore);
+            KsaUiLanguages.Runtime.ApplyLanguage("zh-CN");
+        }
+        results.Add("PASS: Menu language choice is remembered for the next launch");
         var invalid = new KsaUiLanguages.LanguagePack { Locale = "invalid" };
         invalid.Native.Add("AlertTargetSet", "Bad {Wrong}");
         KsaUiLanguages.Runtime.Packs.Add("invalid", invalid);

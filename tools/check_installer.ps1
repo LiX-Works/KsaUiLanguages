@@ -6,7 +6,7 @@ $ErrorActionPreference = 'Stop'
 $taskProject = Split-Path $PSScriptRoot -Parent
 $taskWinPS = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
 $taskWork = Join-Path $taskProject ('work\run-logs\installer-v042-checks-' + [guid]::NewGuid().ToString('N').Substring(0,8))
-$taskMetadata = Get-Content -Raw -LiteralPath (Join-Path $taskProject 'installer\dependencies.json') | ConvertFrom-Json
+$taskMetadata = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $taskProject 'installer\dependencies.json') | ConvertFrom-Json
 . (Join-Path $taskProject 'installer\Common.ps1')
 $taskSupportedVersions = @(Get-TaskPackageGameVersions -Package $taskMetadata)
 $taskGameVersion = Get-TaskGameVersion -GameDir $GameDir
@@ -41,14 +41,14 @@ $taskBefore = @{}
 foreach ($taskPath in $taskProtected) { $taskBefore[$taskPath] = (Get-FileHash -LiteralPath $taskPath).Hash }
 $taskInstallArgs = @('-GameDir',$GameDir,'-InstallRoot',$taskRoot,'-NonInteractive','-NoShortcut','-AcceptLicenses')
 $null = Invoke-TaskChild -Script (Join-Path $taskPackage 'Install.ps1') -Arguments $taskInstallArgs
-$taskState = Get-Content -Raw -LiteralPath (Join-Path $taskRoot 'install-state.json') | ConvertFrom-Json
-$taskManifest = Get-Content -Raw -LiteralPath (Join-Path $taskRoot 'instance\manifest.toml')
+$taskState = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $taskRoot 'install-state.json') | ConvertFrom-Json
+$taskManifest = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $taskRoot 'instance\manifest.toml')
 Require-Task ($taskManifest.Contains('id = "Core"') -and $taskManifest.Contains('id = "KsaUiLanguages"')) 'Install in a Unicode / space path with enabled core and mod'
 Require-Task ((Test-Path -LiteralPath (Join-Path $taskState.loaderDir 'StarMap.exe')) -and (Test-Path -LiteralPath (Join-Path $taskState.runtimeDir 'LICENSE.txt'))) 'Offline loader and licensed private runtime are installed'
 $taskValidation = Invoke-TaskChild -Script (Join-Path $taskRoot 'Launch.ps1') -Arguments @('-ValidateOnly','-NonInteractive')
 $taskValidated = $taskValidation | ConvertFrom-Json
 Require-Task ($taskValidated.status -eq 'VALIDATED' -and !$taskValidated.gameStarted) 'Launcher validates on Windows PowerShell 5.1 without starting a game'
-$taskOwnership = Get-Content -Raw -LiteralPath (Join-Path $taskRoot '.ownership.json') | ConvertFrom-Json
+$taskOwnership = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $taskRoot '.ownership.json') | ConvertFrom-Json
 Require-Task ($taskState.gameVersion -eq $taskGameVersion -and $taskOwnership.gameVersion -eq $taskGameVersion -and $taskValidated.gameVersion -eq $taskGameVersion) 'Ownership, installation state and launcher identify the selected real build'
 $taskInstance = Join-Path $taskRoot 'instance'
 New-Item -ItemType Directory -Path (Join-Path $taskInstance 'test-save') -Force | Out-Null
@@ -57,12 +57,23 @@ New-Item -ItemType Directory -Path (Join-Path $taskInstance 'test-save') -Force 
 $taskOtherMod = [string]::Join([Environment]::NewLine,@('','[[mods]]','id = "OtherExample"','enabled = false # keep',''))
 [IO.File]::AppendAllText((Join-Path $taskInstance 'manifest.toml'),$taskOtherMod)
 $null = Invoke-TaskChild -Script (Join-Path $taskPackage 'Install.ps1') -Arguments $taskInstallArgs
-$taskUpdatedManifest = Get-Content -Raw -LiteralPath (Join-Path $taskInstance 'manifest.toml')
+$taskUpdatedManifest = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $taskInstance 'manifest.toml')
 Require-Task ([regex]::Matches($taskUpdatedManifest,'id = "KsaUiLanguages"').Count -eq 1 -and $taskUpdatedManifest.Contains('enabled = false # keep')) 'Reinstall preserves unrelated manifest entries and avoids duplicate mod entries'
 $taskBackupCount = @(Get-ChildItem -LiteralPath (Join-Path $taskRoot 'backups') -Filter 'settings.toml' -Recurse -File).Count
 Require-Task ($taskBackupCount -ge 1 -and [IO.File]::ReadAllText((Join-Path $taskInstance 'settings.toml')) -eq 'test_setting = 42' -and [IO.File]::ReadAllText((Join-Path $taskInstance 'test-save\sentinel.txt')) -eq 'keep this save') 'Reinstall backs up configuration and preserves existing settings / saves'
+$taskLanguageFile = Join-Path $taskInstance 'mods\KsaUiLanguages\language.json'
+$null = Invoke-TaskChild -Script (Join-Path $taskPackage 'Install.ps1') -Arguments ($taskInstallArgs + @('-Locale','ja-JP'))
+Require-Task ((Get-Content -Raw -Encoding UTF8 -LiteralPath $taskLanguageFile | ConvertFrom-Json).locale -eq 'ja-JP') 'An explicit -Locale sets the startup language'
+[IO.File]::WriteAllText($taskLanguageFile, '{"locale": "en-US"}')
+$null = Invoke-TaskChild -Script (Join-Path $taskPackage 'Install.ps1') -Arguments $taskInstallArgs
+Require-Task ((Get-Content -Raw -Encoding UTF8 -LiteralPath $taskLanguageFile | ConvertFrom-Json).locale -eq 'en-US') 'Reinstall keeps the language last chosen in game'
+$null = Invoke-TaskChild -Script (Join-Path $taskPackage 'Install.ps1') -Arguments ($taskInstallArgs + @('-Locale','fr-FR')) -Expected 1
+Require-Task ((Get-Content -Raw -Encoding UTF8 -LiteralPath $taskLanguageFile | ConvertFrom-Json).locale -eq 'en-US') 'An unsupported -Locale is refused without changing the language'
+foreach ($taskReadme in @('README.en.txt','README.ja.txt','README.zh-CN.txt')) {
+    Require-Task (Test-Path -LiteralPath (Join-Path $taskRoot $taskReadme) -PathType Leaf) "Installed root includes $taskReadme"
+}
 if ($taskGameVersion -eq '2026.10.7.5541') {
-    $taskLegacyState = Get-Content -Raw -LiteralPath (Join-Path $taskRoot 'install-state.json') | ConvertFrom-Json
+    $taskLegacyState = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $taskRoot 'install-state.json') | ConvertFrom-Json
     $taskLegacyState.PSObject.Properties.Remove('gameVersion')
     $taskLegacyState.installerVersion = '4'
     $taskLegacyState | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $taskRoot 'install-state.json') -Encoding utf8
@@ -74,8 +85,8 @@ if ($taskGameVersion -eq '2026.10.7.5541') {
         Require-Task ((Get-FileHash -LiteralPath (Join-Path $taskRoot 'install-state.json')).Hash -eq $taskLegacyBefore) 'Legacy installer4 root refuses the other build before changing its state'
     }
     $null = Invoke-TaskChild -Script (Join-Path $taskPackage 'Install.ps1') -Arguments $taskInstallArgs
-    $taskMigratedState = Get-Content -Raw -LiteralPath (Join-Path $taskRoot 'install-state.json') | ConvertFrom-Json
-    $taskMigratedMarker = Get-Content -Raw -LiteralPath (Join-Path $taskRoot '.ownership.json') | ConvertFrom-Json
+    $taskMigratedState = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $taskRoot 'install-state.json') | ConvertFrom-Json
+    $taskMigratedMarker = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $taskRoot '.ownership.json') | ConvertFrom-Json
     Require-Task ($taskMigratedState.gameVersion -eq $taskGameVersion -and $taskMigratedMarker.gameVersion -eq $taskGameVersion -and [IO.File]::ReadAllText((Join-Path $taskInstance 'test-save\sentinel.txt')) -eq 'keep this save') 'Same-build installer4 update migrates ownership and retains the existing save'
 }
 if ($OtherGameDir) {
@@ -83,7 +94,7 @@ if ($OtherGameDir) {
     $taskDeploymentCount = @(Get-ChildItem -LiteralPath (Join-Path $taskRoot 'deployments') -Directory).Count
     $null = Invoke-TaskChild -Script (Join-Path $taskPackage 'Install.ps1') -Arguments @('-GameDir',$OtherGameDir,'-InstallRoot',$taskRoot,'-NonInteractive','-NoShortcut','-AcceptLicenses') -Expected 1
     Require-Task ((Get-FileHash -LiteralPath (Join-Path $taskRoot 'install-state.json')).Hash -eq $taskStateHash -and @(Get-ChildItem -LiteralPath (Join-Path $taskRoot 'deployments') -Directory).Count -eq $taskDeploymentCount -and [IO.File]::ReadAllText((Join-Path $taskInstance 'test-save\sentinel.txt')) -eq 'keep this save') 'An owned root refuses the other real build without changing deployments, state or saves'
-    $taskChangedState = Get-Content -Raw -LiteralPath (Join-Path $taskRoot 'install-state.json') | ConvertFrom-Json
+    $taskChangedState = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $taskRoot 'install-state.json') | ConvertFrom-Json
     $taskChangedState.gameDir = $OtherGameDir
     $taskChangedState | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $taskRoot 'install-state.json') -Encoding utf8
     $null = Invoke-TaskChild -Script (Join-Path $taskRoot 'Launch.ps1') -Arguments @('-ValidateOnly','-NonInteractive') -Expected 1
@@ -110,14 +121,17 @@ foreach ($taskName in @('Install.ps1','Common.ps1','package.json')) { Copy-Item 
 $taskCorruptRoot = Join-Path $taskWork 'corrupt-install'
 $null = Invoke-TaskChild -Script (Join-Path $taskCorrupt 'Install.ps1') -Arguments @('-GameDir',$GameDir,'-InstallRoot',$taskCorruptRoot,'-NonInteractive','-NoShortcut','-AcceptLicenses') -Expected 1
 Require-Task (!(Test-Path -LiteralPath $taskCorruptRoot)) 'Payload checksum failure prevents all installation writes'
-$taskState = Get-Content -Raw -LiteralPath (Join-Path $taskRoot 'install-state.json') | ConvertFrom-Json
+$taskState = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $taskRoot 'install-state.json') | ConvertFrom-Json
 $taskJunction = Join-Path $taskRoot 'deployments\guard-test'
 New-Item -ItemType Junction -Path $taskJunction -Target $taskForeign | Out-Null
 $null = Invoke-TaskChild -Script (Join-Path $taskRoot 'Uninstall.ps1') -Arguments @('-NonInteractive','-NoShortcut') -Expected 1
 Require-Task ((Test-Path -LiteralPath (Join-Path $taskRoot 'deployments')) -and (Test-Path -LiteralPath (Join-Path $taskForeign 'sentinel.txt'))) 'Uninstall refuses reparse points and preserves their targets'
 $taskJunctionItem = Get-Item -LiteralPath $taskJunction -Force
 if (!($taskJunctionItem.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw 'Expected a test junction' }
-Remove-Item -LiteralPath $taskJunction -Force
+# Windows PowerShell 5.1 Remove-Item can throw NullReferenceException on junctions;
+# RemoveDirectory deletes only the link, never the target's contents.
+[IO.Directory]::Delete($taskJunction)
+Require-Task ((Test-Path -LiteralPath (Join-Path $taskForeign 'sentinel.txt')) -and !(Test-Path -LiteralPath $taskJunction)) 'Test junction removed without touching its target'
 $taskLinkPath = Join-Path $taskWork 'owned-shortcut.lnk'
 $taskShell = New-Object -ComObject WScript.Shell
 $taskLink = $taskShell.CreateShortcut($taskLinkPath)
@@ -133,7 +147,7 @@ $taskForeignLinkPath = Join-Path $taskWork 'foreign-shortcut.lnk'
 $taskForeignLink = $taskShell.CreateShortcut($taskForeignLinkPath)
 $taskForeignLink.TargetPath = Join-Path $env:SystemRoot 'System32\notepad.exe'
 $taskForeignLink.Save()
-$taskState = Get-Content -Raw -LiteralPath (Join-Path $taskRoot 'install-state.json') | ConvertFrom-Json
+$taskState = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $taskRoot 'install-state.json') | ConvertFrom-Json
 $taskState.desktopShortcut = $taskForeignLinkPath
 $taskState | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $taskRoot 'install-state.json') -Encoding utf8
 $null = Invoke-TaskChild -Script (Join-Path $taskRoot 'Uninstall.ps1') -Arguments @('-NonInteractive')

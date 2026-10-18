@@ -89,13 +89,13 @@ function Show-TaskMessage {
     Add-Type -AssemblyName System.Windows.Forms
     $taskIcon = [Windows.Forms.MessageBoxIcon]::Information
     if ($Error) { $taskIcon = [Windows.Forms.MessageBoxIcon]::Error }
-    $null = [Windows.Forms.MessageBox]::Show($Message, 'KSA 中文版安装助手', [Windows.Forms.MessageBoxButtons]::OK, $taskIcon)
+    $null = [Windows.Forms.MessageBox]::Show($Message, 'KSA UI Languages', [Windows.Forms.MessageBoxButtons]::OK, $taskIcon)
 }
 function Get-TaskGameVersion {
     param([string]$GameDir)
     $taskGamePath = [IO.Path]::GetFullPath($GameDir)
     foreach ($taskRequired in @('KSA.dll','Content\manifest.toml')) {
-        if (!(Test-Path -LiteralPath (Join-Path $taskGamePath $taskRequired) -PathType Leaf)) { throw "游戏目录缺少 $taskRequired，请选择包含 KSA.dll 的游戏安装目录。" }
+        if (!(Test-Path -LiteralPath (Join-Path $taskGamePath $taskRequired) -PathType Leaf)) { throw "The game folder is missing $taskRequired. Select the game folder that contains KSA.dll." }
     }
     return [Reflection.AssemblyName]::GetAssemblyName((Join-Path $taskGamePath 'KSA.dll')).Version.ToString()
 }
