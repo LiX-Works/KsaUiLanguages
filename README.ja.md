@@ -22,7 +22,7 @@ Kitten Space Agency は、実際の物理に基づいたハードコアな宇宙
 
 ## ダウンロードとインストール
 
-**最新版: v0.8.0 プレビュー版**（Windows x64、KSA 2026.10.7.5541 / 2026.10.10.5554 対応）。[v0.8.0 をダウンロード](https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.8.0)し、**KsaUiLanguages-0.8.0-installer6-win-x64.zip** を選んでください。
+**最新版: v0.9.0 プレビュー版**（Windows x64、KSA 2026.10.7.5541 / 2026.10.10.5554 対応）。[v0.9.0 をダウンロード](https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.9.0)し、**KsaUiLanguages-0.9.0-installer6-win-x64.zip** を選んでください。
 
 1. 上記の対応バージョンの KSA を用意し、通常どおり起動できることを確認します。
 2. ZIP をすべて展開し、ゲームを終了してから **Install.cmd** を実行します。**KSA.dll** があるゲームフォルダーを選択してください。
@@ -45,7 +45,7 @@ Kitten Space Agency は、実際の物理に基づいたハードコアな宇宙
 - 一部の画面やラベルは英語のままです。
 - 長いラベルやセーブ名は途中で切れる場合があります。
 - 日本語は中国語と共通のフォントで表示するため、一部の漢字が中国語の字形になります。
-- すべての操作や長時間のプレイはまだ検証していません。[リリースノートの詳細（英語）](docs/RELEASE_NOTES_v0.8.0.md)
+- すべての操作や長時間のプレイはまだ検証していません。[リリースノートの詳細（英語）](docs/RELEASE_NOTES_v0.9.0.md)
 
 ## 仕組み
 

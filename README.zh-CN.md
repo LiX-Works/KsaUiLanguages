@@ -22,7 +22,7 @@ Kitten Space Agency 是一款以真实物理为基础的硬核航天模拟游戏
 
 ## 下载与安装
 
-**最新版本：v0.8.0 预览版**，支持 Windows x64 和 KSA 2026.10.7.5541 / 2026.10.10.5554。[下载 v0.8.0](https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.8.0)，推荐选择 **KsaUiLanguages-0.8.0-installer6-win-x64.zip**。
+**最新版本：v0.9.0 预览版**，支持 Windows x64 和 KSA 2026.10.7.5541 / 2026.10.10.5554。[下载 v0.9.0](https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.9.0)，推荐选择 **KsaUiLanguages-0.9.0-installer6-win-x64.zip**。
 
 1. 先安装上述对应版本的 KSA，确认原版能正常运行。
 2. 完整解压安装包，关闭游戏，双击 **Install.cmd**，选择包含 **KSA.dll** 的游戏目录。
@@ -45,7 +45,7 @@ Kitten Space Agency 是一款以真实物理为基础的硬核航天模拟游戏
 - 部分界面和标签仍是英文。
 - 较长的文字和存档名可能显示不全。
 - 日文目前与中文共用字体，部分汉字会显示为中文字形。
-- 尚未测试所有游戏操作和长时间游玩。[详细发布说明](docs/RELEASE_NOTES_v0.8.0.md)
+- 尚未测试所有游戏操作和长时间游玩。[详细发布说明](docs/RELEASE_NOTES_v0.9.0.md)
 
 ## 工作原理
 

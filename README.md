@@ -22,7 +22,7 @@ Kitten Space Agency is a hardcore spaceflight simulator grounded in real physics
 
 ## Download and install
 
-**Latest: v0.8.0 preview** for Windows x64 and KSA 2026.10.7.5541 / 2026.10.10.5554. [Download v0.8.0](https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.8.0) and choose **KsaUiLanguages-0.8.0-installer6-win-x64.zip**.
+**Latest: v0.9.0 preview** for Windows x64 and KSA 2026.10.7.5541 / 2026.10.10.5554. [Download v0.9.0](https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.9.0) and choose **KsaUiLanguages-0.9.0-installer6-win-x64.zip**.
 
 1. Install one of the exact supported KSA versions above and check that the original game runs.
 2. Extract the entire ZIP, close the game, and run **Install.cmd**. Select the game folder containing **KSA.dll**.
@@ -45,7 +45,7 @@ What changed in each version: [CHANGELOG](CHANGELOG.md).
 - Some screens and labels are still in English.
 - Long labels and long save names can be cut off.
 - Japanese currently uses a shared Chinese font, so some kanji show Chinese-style shapes.
-- Not every in-game action or long play session has been tested. [Release notes with details](docs/RELEASE_NOTES_v0.8.0.md)
+- Not every in-game action or long play session has been tested. [Release notes with details](docs/RELEASE_NOTES_v0.9.0.md)
 
 ## How it works
 

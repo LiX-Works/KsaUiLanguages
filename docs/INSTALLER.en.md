@@ -2,7 +2,7 @@
 
 **English** · [简体中文](INSTALLER.md)
 
-[Download v0.8.0](https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.8.0) and choose **KsaUiLanguages-0.8.0-installer6-win-x64.zip**. The package contains the language plugin, StarMap 0.4.7, and a private .NET 10.0.12 runtime. It does not contain the game.
+[Download v0.9.0](https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.9.0) and choose **KsaUiLanguages-0.9.0-installer6-win-x64.zip**. The package contains the language plugin, StarMap 0.4.7, and a private .NET 10.0.12 runtime. It does not contain the game.
 
 ## Install
 
@@ -52,4 +52,4 @@ After building the plugin and recording the real plugin ZIP hash in installer/de
 .\tools\check_installer.ps1 -GameDir 'C:\Games\KSA-5554' -OtherGameDir 'C:\Games\KSA-5541'
 ~~~
 
-The output is dist/KsaUiLanguages-0.8.0-installer6-win-x64.zip. The script reuses the verified local plugin and dependency cache; the loader and runtime come from pinned official URLs and are checked with SHA-256, and the runtime also with SHA-512. Packaged .ps1 files are UTF-8 with BOM and .cmd files use Windows line endings, for compatibility with the built-in Windows PowerShell 5.1.
+The output is dist/KsaUiLanguages-0.9.0-installer6-win-x64.zip. The script reuses the verified local plugin and dependency cache; the loader and runtime come from pinned official URLs and are checked with SHA-256, and the runtime also with SHA-512. Packaged .ps1 files are UTF-8 with BOM and .cmd files use Windows line endings, for compatibility with the built-in Windows PowerShell 5.1.

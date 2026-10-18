@@ -4,6 +4,7 @@ All releases are previews for Windows x64. Each entry links to its detailed note
 
 | Version | Date | Highlights | Notes |
 | --- | --- | --- | --- |
+| v0.9.0 | 2026-10-18 | Clearer homepage in three languages; this changelog | [Notes](docs/RELEASE_NOTES_v0.9.0.md) · [Download](https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.9.0) |
 | v0.8.0 | 2026-10-18 | English installation guide; repository topics | [Notes](docs/RELEASE_NOTES_v0.8.0.md) · [Download](https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.8.0) |
 | v0.7.0 | 2026-10-18 | Language choice is remembered; English installer; shortcut renamed to “KSA UI Languages”; startup language set at install | [Notes](docs/RELEASE_NOTES_v0.7.0.md) · [Download](https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.7.0) |
 | v0.6.0 | 2026-10-18 | Japanese UI; guides in three languages | [Notes](docs/RELEASE_NOTES_v0.6.0.md) · [Download](https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.6.0) |

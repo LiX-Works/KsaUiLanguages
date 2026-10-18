@@ -34,7 +34,7 @@
 .\tools\package.ps1
 ~~~
 
-生成 dist/KsaUiLanguages-0.8.0-build5541-5554.zip 和 SHA256SUMS.txt。打包使用新的 staging 目录与文件白名单，拒绝游戏/加载器 DLL。
+生成 dist/KsaUiLanguages-0.9.0-build5541-5554.zip 和 SHA256SUMS.txt。打包使用新的 staging 目录与文件白名单，拒绝游戏/加载器 DLL。
 
 若需要与当前 Git 提交严格对应的源码包，先提交所有准备发行的更改，再运行：
 
@@ -92,3 +92,6 @@ v0.7.0 让 Language 菜单的选择写回 `language.json`，下次启动沿用�
 
 
 v0.8.0 新增英文安装指南 docs/INSTALLER.en.md，英文与日文首页的安装说明链接改指向它；插件功能与 v0.7.0 相同，重新构建后同样通过两版各 60 项语言检查及安装器检查。
+
+
+v0.9.0 重写三语首页（先介绍模组和游戏、白话亮点、已知限制列表、徽章与反馈入口），版本历史移到 CHANGELOG.md；插件功能与 v0.7.0 相同，重新构建后同样通过两版检查。

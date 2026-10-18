@@ -1,4 +1,4 @@
-KSA UI Languages v0.8.0 — 日本語インストールガイド
+KSA UI Languages v0.9.0 — 日本語インストールガイド
 
 Kitten Space Agency（KSA）は、開発中の宇宙シミュレーションゲームです。
 この非公式言語パックは UI の一部を日本語・簡体字中国語で表示し、
@@ -6,7 +6,7 @@ Kitten Space Agency（KSA）は、開発中の宇宙シミュレーションゲ�
 2026.10.7.5541 / 2026.10.10.5554。ゲーム本体は別途用意してください。
 
 使い始めるには
-1. KsaUiLanguages-0.8.0-installer6-win-x64.zip をすべて展開します。
+1. KsaUiLanguages-0.9.0-installer6-win-x64.zip をすべて展開します。
 2. ゲームを終了し、Install.cmd を実行します。Install.ps1 ではありません。
 3. フォルダー選択画面（英語）が開きます。KSA.dll のあるゲームフォルダーを
    選択し、選択を確定してください。
@@ -48,6 +48,6 @@ Uninstall.cmd を実行します。instance と backups は保持されます。
 第三者のコンポーネントには、それぞれのライセンスが適用されます。
 
 詳しい日本語の説明:
-https://github.com/LiX-Works/KsaUiLanguages/blob/v0.8.0/README.ja.md
+https://github.com/LiX-Works/KsaUiLanguages/blob/v0.9.0/README.ja.md
 ダウンロード:
-https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.8.0
+https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.9.0
