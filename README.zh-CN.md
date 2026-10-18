@@ -1,58 +1,58 @@
 # KSA UI Languages
 
+[![Release](https://img.shields.io/github/v/release/LiX-Works/KsaUiLanguages?include_prereleases&label=release)](https://github.com/LiX-Works/KsaUiLanguages/releases) ![KSA builds 5541 and 5554](https://img.shields.io/badge/KSA-5541%20%7C%205554-blue) ![Windows x64](https://img.shields.io/badge/platform-Windows%20x64-lightgrey) [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
 [English](README.md) · **简体中文** · [日本語](README.ja.md)
 
-**Kitten Space Agency（KSA）是一款仍在开发中的太空模拟游戏。** 本语言包为设置、飞船编辑和常用飞行窗口提供简体中文与日文，也能切回英文。
+**Kitten Space Agency 的多语言界面模组：用简体中文或日文游玩，并可随时在游戏内切换语言。**
 
-**技术上**：这是一个运行时本地化框架，不是静态的文本补丁。游戏内可即时切换语言；每种语言各有 1,625 条词典，附 748 条语义校对备注；每个支持的游戏版本都通过 60 项语言与控件自动检查，另有兼容性预检工具，用于检查新的游戏版本。
+Kitten Space Agency 是一款以真实物理为基础的硬核航天模拟游戏：你亲手设计火箭，按真实的轨道力学飞行。上手不难，但对喜欢挑战的玩家来说几乎没有上限。
 
 ![KSA 飞行界面：简体中文 UI，Language 菜单已展开，列出 English、日本語、简体中文](docs/images/language-menu-zh-CN.webp)
 
 *飞行界面，显示简体中文 UI。Language 菜单可在 English、日本語、简体中文之间切换。*
 
-**当前版本：v0.8.0 预览版。支持 Windows 64 位及 KSA 2026.10.7.5541、2026.10.10.5554。** 这是部分界面翻译；尚未接入的内容和缺少译文的内容仍显示英文。
+## 亮点
+
+- **一键切换语言**：在游戏内菜单选择 English、日本語 或 简体中文，选择会被记住。
+- **离线安装，简单省事**：一个安装包搞定，无需管理员权限，也不用另外下载。
+- **存档安全**：更新时保留设置和存档，配置会自动备份。
+- **认真翻译**：每种语言 1,625 条词条，逐条按含义校对；RCS、Δv 等玩家熟悉的写法保持不变。
+- **每次发布前**都在每个支持的游戏版本上做过测试。
 
 ## 下载与安装
 
-[下载 v0.8.0](https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.8.0)，推荐选择 **KsaUiLanguages-0.8.0-installer6-win-x64.zip**。
+**最新版本：v0.8.0 预览版**，支持 Windows x64 和 KSA 2026.10.7.5541 / 2026.10.10.5554。[下载 v0.8.0](https://github.com/LiX-Works/KsaUiLanguages/releases/tag/v0.8.0)，推荐选择 **KsaUiLanguages-0.8.0-installer6-win-x64.zip**。
 
 1. 先安装上述对应版本的 KSA，确认原版能正常运行。
 2. 完整解压安装包，关闭游戏，双击 **Install.cmd**，选择包含 **KSA.dll** 的游戏目录。
 3. 从桌面 **“KSA UI Languages (5554)”** 或 **“KSA UI Languages (5541)”** 启动，名称取决于所选游戏版本。
 4. 游戏内通过 **Language → English / 日本語 / 简体中文** 切换语言，选择会保留到下次启动。
 
-安装器提示为英文，确认许可时选择 **Yes**。加载器和私有运行时已包含在包内，可离线安装，无需管理员权限。请运行 Install.cmd；双击 Install.ps1 可能只会打开记事本。
+安装器提示为英文，确认许可时选择 **Yes**。请运行 Install.cmd；双击 Install.ps1 可能只会打开记事本。
 
-**同一游戏版本更新语言包**：选择原来的游戏目录，设置、存档和启动语言都会保留。配置和旧插件会备份，安装器不会自动备份存档。从 v0.6.0 或更早版本更新时，旧的“KSA 中文版”桌面快捷方式会换成新名称。
+**更新**：运行新的安装包，选择原来的游戏目录。设置、存档和启动语言都会保留；配置和旧插件会备份，存档不会自动备份。每个游戏版本（5541 或 5554）使用独立的实例，游戏本体不会被改动。[详细安装、更新与卸载说明](docs/INSTALLER.md)
 
-**从 5541 换到 5554**：安装器会创建独立的 Build5554 实例，保留 Build5541。请保留两个游戏目录；安装器不会更新或备份游戏本体，也不会自动迁移旧存档。[详细安装、存档与卸载说明](docs/INSTALLER.md)
-
-## 近期更新
-
-- **v0.8.0 新增英文安装指南**：完整的安装、更新与卸载说明有了英文版（[docs/INSTALLER.en.md](docs/INSTALLER.en.md)），英文和日文首页的安装说明链接已改指向它。
-
-v0.7.0 起：
-
-- **记住语言选择**：在 Language 菜单里选的语言，下次启动时会直接使用。
-- **英文安装器**：安装、启动和卸载的提示都改成了英文，桌面快捷方式改名为“KSA UI Languages (版本号)”。
-- **安装时的启动语言**：新安装时按 Windows 显示语言决定，日文系统用日文，中文系统用简体中文，其他系统用英文；更新安装会保留原来的语言。脚本安装可以传入 `-Locale ja-JP`、`zh-CN` 或 `en-US`。
+各版本的变化见 [更新记录（CHANGELOG）](CHANGELOG.md)。
 
 ## 语言
 
-- **三种语言**：新增日文，保留简体中文和原版英文。中、日词典各有 **1,625 条记录**，覆盖现有翻译框架中的设置、编辑器、常用 HUD、规划、轨迹、存档和提示等内容。
-- **日文欢迎页**：改善假名和日文标点换行，并补充显示所需的字体字符。
-- **保留熟悉的标识**：RCS、EVA、Isp、TWR、HUD、Δv 等常用缩写、单位、快捷键、部件型号和玩家自定义名称保留。
+- **三种语言**：简体中文和日文，以及原版英文。翻译覆盖设置、飞船编辑器、常用飞行窗口和 HUD、规划、轨迹和存档窗口；尚未翻译的内容保持英文。
+- **保留熟悉的标识**：RCS、EVA、Isp、TWR、HUD、Δv 等缩写，以及单位、快捷键、部件型号和你给飞船起的名字，都保持原样。
 
-启动语言保存在安装实例的 `instance/mods/KsaUiLanguages/language.json` 中（`locale` 为 `ja-JP`、`zh-CN` 或 `en-US`），在 Language 菜单中切换时会自动更新。
+## 已知限制
 
-## 检查与已知问题
+- 部分界面和标签仍是英文。
+- 较长的文字和存档名可能显示不全。
+- 日文目前与中文共用字体，部分汉字会显示为中文字形。
+- 尚未测试所有游戏操作和长时间游玩。[详细发布说明](docs/RELEASE_NOTES_v0.8.0.md)
 
-同一个发行插件在两个支持版本上各通过 **60 项语言与控件自动检查**；安装器通过 **25 项（5541）和 23 项（5554）隔离的安装、更新与卸载检查**。仍有英文内容，长文字和存档名可能截断；日文使用共用的 Noto Sans SC 字体，部分汉字会显示为中文字形。全部操作与长时间运行尚未全面验证。[详细检查记录与已知问题](docs/RELEASE_NOTES_v0.8.0.md)
+## 工作原理
 
-这是非官方社区语言包，**不含 KSA 游戏本体或 Starship 飞船模组**。后续公开版本按 0.1 递增，见[版本编号规则](docs/VERSIONING.md)。
+模组在游戏运行时替换屏幕上的文字，不修改游戏文件，所以游戏目录保持原样。构建和测试细节见 [开发与构建](docs/DEVELOPMENT.md)。
 
-## 校对与开源
+## 反馈、参与与许可
 
-[校对字典](docs/DICTIONARY.md) · [贡献翻译](CONTRIBUTING.md) · [开发与构建](docs/DEVELOPMENT.md) · [部件命名核查](docs/PART_NAMING_REVIEW.md)
+发现译文有误或不通顺？欢迎 [提交 issue](https://github.com/LiX-Works/KsaUiLanguages/issues)。参与翻译请看 [贡献翻译](CONTRIBUTING.md)；参考资料：[校对字典](docs/DICTIONARY.md) · [部件命名核查](docs/PART_NAMING_REVIEW.md) · [版本编号规则](docs/VERSIONING.md)。
 
-独立代码和译文采用 **MIT**，字体采用 **SIL OFL**；加载器和运行时适用随附许可。[许可证与来源](THIRD_PARTY.md)
+这是非官方社区模组，**不含 KSA 游戏本体或 Starship 飞船模组**。独立代码和译文采用 **MIT**，字体采用 **SIL OFL**；加载器和运行时适用随附许可。[许可证与来源](THIRD_PARTY.md)
