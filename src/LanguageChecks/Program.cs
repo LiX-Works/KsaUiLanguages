@@ -34,7 +34,7 @@ internal static class Program
         NativeLibrary.SetDllImportResolver(typeof(Program).Assembly, (name, assembly, searchPath) =>
             name == "KsaCheckImGui" ? NativeLibrary.Load(Path.Combine(GameDir, "imgui.dll")) : IntPtr.Zero);
         Directory.CreateDirectory(Path.Combine(Root, "work", "run-logs"));
-        RunChecks();
+        try { RunChecks(); } catch (Exception error) { Console.Error.WriteLine(error); Environment.ExitCode = 1; }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -42,8 +42,10 @@ internal static class Program
     {
         Require(KsaUiLanguages.LanguagePlugin.SupportsGameVersion("2026.10.7.5541")
             && KsaUiLanguages.LanguagePlugin.SupportsGameVersion("2026.10.10.5554")
+            && KsaUiLanguages.LanguagePlugin.SupportsGameVersion("2026.10.19.5638")
+            && !KsaUiLanguages.LanguagePlugin.SupportsGameVersion("2026.10.19.5639")
             && !KsaUiLanguages.LanguagePlugin.SupportsGameVersion("2026.10.10.5555")
-            && !KsaUiLanguages.LanguagePlugin.SupportsGameVersion(null), "Only the two verified game builds pass the production version guard");
+            && !KsaUiLanguages.LanguagePlugin.SupportsGameVersion(null), "Only the three verified game builds pass the production version guard");
         var results = new List<string>();
         var harmony = new Harmony("org.ksa.uilanguages.headlesschecks");
         harmony.Patch(AccessTools.PropertyGetter(typeof(KSA.Constants), nameof(KSA.Constants.DocumentsFolderPath)),
@@ -603,7 +605,7 @@ internal static class Program
         var source = System.Xml.Linq.XDocument.Load(Path.Combine(GameDir, "Content", "Core", "Gauges.xml"));
         var canvases = source.Descendants().Where(e => e.Name.LocalName == "GaugeCanvas" && e.Attribute("Id") is not null)
             .ToDictionary(e => e.Attribute("Id")!.Value, e => e.Elements().Single(x => x.Name.LocalName == "DisplayName").Value);
-        Require(canvases.Count == 14, "Confirmed default Core canvas set contains 14 IDs");
+        Require(canvases.Count == (typeof(KSA.Program).Assembly.GetName().Version!.ToString() == "2026.10.19.5638" ? 15 : 14), "Core canvas count matches the game build");
         var chineseCanvasNames = canvases.Keys.ToDictionary(k => k, KsaUiLanguages.HudContextAssignmentDisplayPatch.CanvasCaption);
         Require(chineseCanvasNames.All(p => p.Key != p.Value), "Every actual Core canvas has a Chinese context-table display alias");
         Require(KsaUiLanguages.HudContextAssignmentDisplayPatch.CanvasCaption("Burn") == "机动编辑器"

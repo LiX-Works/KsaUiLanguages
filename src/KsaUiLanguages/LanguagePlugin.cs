@@ -36,7 +36,7 @@ public sealed class LanguagePlugin
 {
     private Harmony? _patches;
     public static bool SupportsGameVersion(string? version)
-        => version is "2026.10.7.5541" or "2026.10.10.5554";
+        => version is "2026.10.7.5541" or "2026.10.10.5554" or "2026.10.19.5638";
 
     [StarMapBeforeMain]
     public void BeforeMain()
@@ -44,7 +44,7 @@ public sealed class LanguagePlugin
         var gameVersion = typeof(KSA.Program).Assembly.GetName().Version?.ToString();
         if (!SupportsGameVersion(gameVersion))
         {
-            Runtime.Log($"UI language mod disabled: supported builds are 2026.10.7.5541 and 2026.10.10.5554; found {gameVersion}.");
+            Runtime.Log($"UI language mod disabled: supported builds are 2026.10.7.5541, 2026.10.10.5554 and 2026.10.19.5638; found {gameVersion}.");
             return;
         }
         try

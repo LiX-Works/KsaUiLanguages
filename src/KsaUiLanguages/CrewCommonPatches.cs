@@ -97,7 +97,7 @@ public static class CrewAssignmentWindowTitlePatch
 public static class CrewPortraitBoneCaptionPatch
 {
     public static MethodBase TargetMethod()
-        => AccessTools.Method(typeof(CrewPortraitPanel), "Draw",
+        => AccessTools.Method(typeof(CrewPortraitPanel), "DrawCameraControls") ?? AccessTools.Method(typeof(CrewPortraitPanel), "Draw",
             new[] { typeof(GaugeCanvas), typeof(float2), typeof(float2) })
             ?? throw new MissingMethodException(typeof(CrewPortraitPanel).FullName,
                 "Draw(GaugeCanvas, float2, float2)");
@@ -220,8 +220,8 @@ public static class OrbiterHoverTooltipPatch
 /// ticks and astronomical object names intact.
 /// </summary>
 [HarmonyPatch]
-public static class GalacticGridCaptionPatch
-{
+public static class GalacticGridCaptionPatch {
+    public static ImString LocalizeLabel(ImString label) => Runtime.ImText(Runtime.UtilityText(label.ToString()));
     private static readonly HashSet<string> Labels = new(StringComparer.Ordinal)
     {
         "galactic centre", "north galactic pole", "south galactic pole"
@@ -239,6 +239,11 @@ public static class GalacticGridCaptionPatch
         foreach (var instruction in instructions)
         {
             yield return instruction;
+            if (instruction.opcode == OpCodes.Call && instruction.operand is MethodInfo utf8 && utf8.DeclaringType == typeof(ImString) && utf8.Name == "op_Implicit" && utf8.GetParameters()[0].ParameterType == typeof(ReadOnlySpan<byte>) && typeof(KSA.Program).Assembly.GetName().Version!.ToString() == "2026.10.19.5638")
+            {
+                yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(GalacticGridCaptionPatch), nameof(LocalizeLabel))!);
+                sites++;
+            }
             if (instruction.opcode == OpCodes.Ldstr && instruction.operand is string label && Labels.Contains(label))
             {
                 yield return new CodeInstruction(OpCodes.Call, lookup);

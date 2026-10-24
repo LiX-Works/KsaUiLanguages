@@ -19,6 +19,7 @@ public static class HudContextAssignmentDisplayPatch
         ["EngineControl"] = "Engine Control",
         ["KittenFlightControl"] = "Kitten Flight Control",
         ["Telemetry"] = "Telemetry",
+        ["Radiation"] = "Radiation",
         ["AutopilotSettings"] = "Autopilot Settings",
         ["Altitude"] = "Altitude",
         ["Resources"] = "Resources",
