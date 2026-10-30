@@ -1,3 +1,7 @@
+![KSA flight view with the Simplified Chinese UI and the Language menu open, listing English, 日本語 and 简体中文](docs/images/language-menu-zh-CN.webp)
+
+*In flight with the Simplified Chinese UI. The Language menu switches among English, 日本語 and 简体中文.*
+
 # KSA UI Languages
 
 [![Release](https://img.shields.io/github/v/release/LiX-Works/KsaUiLanguages?include_prereleases&label=release)](https://github.com/LiX-Works/KsaUiLanguages/releases) ![KSA builds 5541 and 5554](https://img.shields.io/badge/KSA-5541%20%7C%205554-blue) ![Windows x64](https://img.shields.io/badge/platform-Windows%20x64-lightgrey) [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
@@ -7,10 +11,6 @@
 **A multi-language UI mod for Kitten Space Agency — play in Simplified Chinese or Japanese, and switch languages any time in game.**
 
 Kitten Space Agency is a hardcore spaceflight simulator grounded in real physics: you design your own rockets and fly them through true orbital mechanics — easy to start, with almost no ceiling for players who love a challenge.
-
-![KSA flight view with the Simplified Chinese UI and the Language menu open, listing English, 日本語 and 简体中文](docs/images/language-menu-zh-CN.webp)
-
-*In flight with the Simplified Chinese UI. The Language menu switches among English, 日本語 and 简体中文.*
 
 ## Highlights
 
@@ -33,7 +33,7 @@ At the license confirmation, choose **Yes** to accept the bundled licenses and c
 
 **Updating:** run the new installer and select the original game folder. Settings, saves, and the startup language are kept; the configuration and previous plugin are backed up, but saves are not. Each game build (5541 or 5554) gets its own profile, and the game itself is never modified. [Installation, update, and removal guide](docs/INSTALLER.en.md)
 
-What changed in each version: [CHANGELOG](CHANGELOG.md).
+What changed in each version: [CHANGELOG](docs/CHANGELOG.md).
 
 ## Languages
 
@@ -45,7 +45,7 @@ What changed in each version: [CHANGELOG](CHANGELOG.md).
 - Some screens and labels are still in English.
 - Long labels and long save names can be cut off.
 - Japanese currently uses a shared Chinese font, so some kanji show Chinese-style shapes.
-- Not every in-game action or long play session has been tested. [Release notes with details](docs/RELEASE_NOTES_v0.9.0.md)
+- Not every in-game action or long play session has been tested. [Release notes with details](docs/releases/RELEASE_NOTES_v0.9.0.md)
 
 ## How it works
 
@@ -53,6 +53,6 @@ The mod changes the text on screen while the game runs instead of editing game f
 
 ## Feedback, contributing, and licenses
 
-Found a wrong or awkward translation? [Open an issue](https://github.com/LiX-Works/KsaUiLanguages/issues). To help translate, see [Contribute translations](CONTRIBUTING.md); reference material: [review dictionary (Chinese)](docs/DICTIONARY.md) · [part-name review (Chinese)](docs/PART_NAMING_REVIEW.md) · [versioning (Chinese)](docs/VERSIONING.md).
+Found a wrong or awkward translation? [Open an issue](https://github.com/LiX-Works/KsaUiLanguages/issues). To help translate, see [Contribute translations](docs/CONTRIBUTING.md); reference material: [review dictionary (Chinese)](docs/DICTIONARY.md) · [part-name review (Chinese)](docs/dev/PART_NAMING_REVIEW.md) · [versioning (Chinese)](docs/VERSIONING.md).
 
-This is an unofficial community mod. **It includes neither the KSA game nor the Starship vehicle mod.** Independently authored code and translations use **MIT**; the font uses **SIL OFL**. The loader and runtime retain their accompanying licenses. [Licenses and attribution](THIRD_PARTY.md)
+This is an unofficial community mod. **It includes neither the KSA game nor the Starship vehicle mod.** Independently authored code and translations use **MIT**; the font uses **SIL OFL**. The loader and runtime retain their accompanying licenses. [Licenses and attribution](docs/THIRD_PARTY.md)
